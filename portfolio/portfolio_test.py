@@ -12,7 +12,7 @@ class TestPortfolio(unittest.TestCase):
         risk_per_trade = 0.02
         ticker = {}
         self.port = Portfolio(
-            ticker, base=base, leverage=leverage, 
+            ticker, base=base, leverage=leverage,
             equity=equity, risk_per_trade=risk_per_trade
         )
 
@@ -39,6 +39,7 @@ class TestPortfolio(unittest.TestCase):
 
     def test_add_position_units(self):
         side = "LONG"
+        market = "GBP/USD"
         units = 2000
         exposure = float(units)
         add_price = 1.51819
