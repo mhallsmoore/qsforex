@@ -54,9 +54,10 @@ class Portfolio(object):
         else:
             ps = self.positions[market]
             ps.units -= units
-            ps.exposure -= float(units)
-            ps.update_position_price(self, remove_price)
-            pnl = ps.profit_base
+            exposure = float(units)
+            ps.exposure -= exposure
+            ps.update_position_price(remove_price)
+            pnl = ps.calculate_pips() * exposure / remove_price 
             self.balance += pnl
             return True
 
@@ -67,8 +68,8 @@ class Portfolio(object):
             return False
         else:
             ps = self.positions[market]
-            ps.update_position_price(self, remove_price)
-            pnl = ps.profit_base
+            ps.update_position_price(remove_price)
+            pnl = ps.calculate_pips() * ps.exposure / remove_price 
             self.balance += pnl
             del[self.positions[market]]
             return True

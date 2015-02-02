@@ -19,7 +19,7 @@ class Position(object):
         return mult * (self.cur_price - self.avg_price)
 
     def calculate_profit_base(self):
-        pips = self.calculate_pips()
+        pips = self.calculate_pips()        
         return pips * self.exposure / self.cur_price
 
     def calculate_profit_perc(self):
