@@ -10,9 +10,8 @@ class TestRandomStrategy(object):
     def calculate_signals(self, event):
         if event.type == 'TICK':
             self.ticks += 1
-            if self.ticks == 2:
+            if self.ticks % 2 == 0:
                 signal = SignalEvent(self.instrument, "market", "buy")
-                self.events.put(signal)
-            if self.ticks == 10:
+            else:
                 signal = SignalEvent(self.instrument, "market", "sell")
-                self.events.put(signal)
+            self.events.put(signal)

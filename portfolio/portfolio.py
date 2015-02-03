@@ -16,7 +16,7 @@ class Portfolio(object):
         self.equity = equity
         self.balance = deepcopy(self.equity)
         self.risk_per_trade = risk_per_trade
-        self.trade_units = 100000#self.calc_risk_position_size()
+        self.trade_units = self.calc_risk_position_size()
         self.positions = {}
 
     def calc_risk_position_size(self):
