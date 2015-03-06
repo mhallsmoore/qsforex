@@ -2,11 +2,12 @@ import copy
 import Queue
 import threading
 import time
+from decimal import Decimal, getcontext
 
 from qsforex.execution.execution import Execution
 from qsforex.portfolio.portfolio import Portfolio
 from qsforex.settings import STREAM_DOMAIN, API_DOMAIN, ACCESS_TOKEN, ACCOUNT_ID
-from qsforex.strategy.strategy import TestRandomStrategy
+from qsforex.strategy.strategy import TestStrategy
 from qsforex.streaming.streaming import StreamingForexPrices
 
 
@@ -35,8 +36,12 @@ def trade(events, strategy, portfolio, execution):
 
 
 if __name__ == "__main__":
+    # Set the number of decimal places to 2
+    getcontext().prec = 2
+
     heartbeat = 0.5  # Half a second between polling
     events = Queue.Queue()
+    equity = Decimal("99999.65")
 
     # Trade "Cable"
     instrument = "GBP_USD"
@@ -50,12 +55,12 @@ if __name__ == "__main__":
 
     # Create the strategy/signal generator, passing the 
     # instrument and the events queue
-    strategy = TestRandomStrategy(instrument, events)
+    strategy = TestStrategy(instrument, events)
 
     # Create the portfolio object that will be used to
     # compare the OANDA positions with the local, to
     # ensure backtesting integrity.
-    portfolio = Portfolio(prices, events, equity=98499.05)
+    portfolio = Portfolio(prices, events, equity=equity)
 
     # Create the execution handler making sure to
     # provide authentication commands

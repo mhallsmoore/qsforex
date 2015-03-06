@@ -1,6 +1,6 @@
+from decimal import Decimal, getcontext, ROUND_HALF_DOWN
 import unittest
 
-#from position import Position
 from portfolio import Portfolio
 
 
@@ -8,11 +8,12 @@ class TestPortfolio(unittest.TestCase):
     def setUp(self):
         base = "GBP"
         leverage = 20
-        equity = 100000.0
-        risk_per_trade = 0.02
+        equity = Decimal("100000.00")
+        risk_per_trade = Decimal("0.02")
         ticker = {}
+        events = {}
         self.port = Portfolio(
-            ticker, base=base, leverage=leverage,
+            ticker, events, base=base, leverage=leverage,
             equity=equity, risk_per_trade=risk_per_trade
         )
 
@@ -20,9 +21,9 @@ class TestPortfolio(unittest.TestCase):
         side = "LONG"
         market = "GBP/USD"
         units = 2000
-        exposure = float(units)
-        add_price = 1.51819
-        remove_price = 1.51770
+        exposure = Decimal(str(units))
+        add_price = Decimal("1.51819")
+        remove_price = Decimal("1.51770")
 
         self.port.add_new_position(
             side, market, units, exposure,
@@ -41,9 +42,9 @@ class TestPortfolio(unittest.TestCase):
         side = "LONG"
         market = "GBP/USD"
         units = 2000
-        exposure = float(units)
-        add_price = 1.51819
-        remove_price = 1.51770
+        exposure = Decimal(str(units))
+        add_price = Decimal("1.51819")
+        remove_price = Decimal("1.51770")
 
         # Test for no position
         market = "EUR/USD"
@@ -62,21 +63,21 @@ class TestPortfolio(unittest.TestCase):
         ps = self.port.positions[market]
 
         # Test for addition of units
-        add_price = 1.51928
-        remove_price = 1.51878
+        add_price = Decimal("1.51928")
+        remove_price = Decimal("1.51878")
         apu = self.port.add_position_units(
             market, units, exposure,
             add_price, remove_price
         )
         self.assertTrue(apu)
-        self.assertAlmostEqual(ps.avg_price, 1.518735)
+        self.assertEqual(ps.avg_price, Decimal("1.518735"))
 
     def test_remove_position_units(self):
         side = "LONG"
         units = 2000
-        exposure = float(units)
-        add_price = 1.51819
-        remove_price = 1.51770
+        exposure = Decimal(str(units))
+        add_price = Decimal("1.51819")
+        remove_price = Decimal("1.51770")
 
         # Test for no position
         market = "EUR/USD"
@@ -92,37 +93,37 @@ class TestPortfolio(unittest.TestCase):
             add_price, remove_price
         )
         ps = self.port.positions[market]
-        add_price = 1.51928
-        remove_price = 1.51878
+        add_price = Decimal("1.51928")
+        remove_price = Decimal("1.51878")
         add_units = 8000
-        add_exposure = float(add_units)
+        add_exposure = Decimal(str(add_units))
         apu = self.port.add_position_units(
             market, add_units, add_exposure,
             add_price, remove_price
         )
         self.assertEqual(ps.units, 10000)
-        self.assertEqual(ps.exposure, 10000.0)
-        self.assertAlmostEqual(ps.avg_price, 1.519062)
+        self.assertEqual(ps.exposure, Decimal("10000.00"))
+        self.assertEqual(ps.avg_price, Decimal("1.519062"))
 
         # Test removal of (some) of the units
-        add_price = 1.52134
-        remove_price = 1.52017
+        add_price = Decimal("1.52134")
+        remove_price = Decimal("1.52017")
         remove_units = 3000
         rpu = self.port.remove_position_units(
             market, remove_units, remove_price
         )
         self.assertTrue(rpu)
         self.assertEqual(ps.units, 7000)
-        self.assertEqual(ps.exposure, 7000.0)
-        self.assertAlmostEqual(ps.profit_base, 5.102060953709626)
-        self.assertAlmostEqual(self.port.balance, 100002.18659755158)
+        self.assertEqual(ps.exposure, Decimal("7000.00"))
+        self.assertEqual(ps.profit_base, Decimal("5.11127"))
+        self.assertEqual(self.port.balance, Decimal("100002.19"))
 
     def test_close_position(self):
         side = "LONG"
         units = 2000
-        exposure = float(units)
-        add_price = 1.51819
-        remove_price = 1.51770
+        exposure = Decimal(str(units))
+        add_price = Decimal("1.51819")
+        remove_price = Decimal("1.51770")
 
         # Test for no position
         market = "EUR/USD"
@@ -144,7 +145,7 @@ class TestPortfolio(unittest.TestCase):
         )
         self.assertTrue(cp)
         self.assertRaises(ps)  # Key doesn't exist
-        self.assertAlmostEqual(self.port.balance, 99999.35428609079)
+        self.assertEqual(self.port.balance, Decimal("99999.35"))
 
         # Add 2000, add another 8000, remove 3000 and then 
         # close the position. Balance should be as expected 
@@ -154,33 +155,33 @@ class TestPortfolio(unittest.TestCase):
             add_price, remove_price
         )
         ps = self.port.positions[market]
-        add_price = 1.51928
-        remove_price = 1.51878
+        add_price = Decimal("1.51928")
+        remove_price = Decimal("1.51878")
         add_units = 8000
-        add_exposure = float(add_units)
+        add_exposure = Decimal(str(add_units))
         apu = self.port.add_position_units(
             market, add_units, add_exposure,
             add_price, remove_price
         )
         self.assertEqual(ps.units, 10000)
-        self.assertEqual(ps.exposure, 10000.0)
-        self.assertAlmostEqual(ps.avg_price, 1.519062)
-        add_price = 1.52134
-        remove_price = 1.52017
+        self.assertEqual(ps.exposure, Decimal("10000.00"))
+        self.assertEqual(ps.avg_price, Decimal("1.519062"))
+        add_price = Decimal("1.52134")
+        remove_price = Decimal("1.52017")
         remove_units = 3000
         rpu = self.port.remove_position_units(
             market, remove_units, remove_price
         )
         self.assertEqual(ps.units, 7000)
-        self.assertEqual(ps.exposure, 7000.0)
-        self.assertAlmostEqual(ps.profit_base, 5.102060953709626)
-        self.assertAlmostEqual(self.port.balance, 100001.54088364237)
+        self.assertEqual(ps.exposure, Decimal("7000.00"))
+        self.assertEqual(ps.profit_base, Decimal("5.11127"))
+        self.assertEqual(self.port.balance, Decimal("100001.54"))
         cp = self.port.close_position(
             market, remove_price
         )
         self.assertTrue(cp)
         self.assertRaises(ps)  # Key doesn't exist
-        self.assertAlmostEqual(self.port.balance, 100006.64294459608)
+        self.assertEqual(self.port.balance, Decimal("100006.65"))
 
 
 if __name__ == "__main__":

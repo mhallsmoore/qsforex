@@ -1,4 +1,5 @@
 from copy import deepcopy
+from decimal import Decimal, getcontext, ROUND_HALF_DOWN
 
 from qsforex.event.event import OrderEvent
 from qsforex.portfolio.position import Position
@@ -7,7 +8,7 @@ from qsforex.portfolio.position import Position
 class Portfolio(object):
     def __init__(
         self, ticker, events, base="GBP", leverage=20, 
-        equity=100000.0, risk_per_trade=0.02
+        equity=Decimal("100000.00"), risk_per_trade=Decimal("0.02")
     ):
         self.ticker = ticker
         self.events = events
@@ -56,11 +57,11 @@ class Portfolio(object):
         else:
             ps = self.positions[market]
             ps.units -= units
-            exposure = float(units)
+            exposure = Decimal(units)
             ps.exposure -= exposure
             ps.update_position_price(remove_price)
             pnl = ps.calculate_pips() * exposure / remove_price 
-            self.balance += pnl
+            self.balance += pnl.quantize(Decimal("0.01", ROUND_HALF_DOWN))
             return True
 
     def close_position(
@@ -72,7 +73,7 @@ class Portfolio(object):
             ps = self.positions[market]
             ps.update_position_price(remove_price)
             pnl = ps.calculate_pips() * ps.exposure / remove_price 
-            self.balance += pnl
+            self.balance += pnl.quantize(Decimal("0.01", ROUND_HALF_DOWN))
             del[self.positions[market]]
             return True
 
@@ -83,12 +84,12 @@ class Portfolio(object):
 
         # Check side for correct bid/ask prices
         #if side == "buy":
-        add_price = self.ticker.cur_ask
-        remove_price = self.ticker.cur_bid
+        add_price = Decimal(str(self.ticker.cur_ask))
+        remove_price = Decimal(str(self.ticker.cur_bid))
         #else:
             #add_price = self.ticker.cur_bid
             #remove_price = self.ticker.cur_ask
-        exposure = float(units)
+        exposure = Decimal(str(units))
 
         # If there is no position, create one
         if market not in self.positions:
@@ -130,7 +131,7 @@ class Portfolio(object):
                         new_side = "sell"
                     else:
                         new_side = "sell"
-                    new_exposure = float(units)
+                    new_exposure = Decimal(str(units))
                     self.add_new_position(
                         new_side, market, new_units, 
                         new_exposure, add_price, remove_price
