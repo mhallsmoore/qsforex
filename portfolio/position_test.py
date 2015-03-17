@@ -9,7 +9,7 @@ class TestLongGBPUSDPosition(unittest.TestCase):
         getcontext.prec = 2
         side = "LONG"
         market = "GBP/USD"
-        units = 2000
+        units = Decimal(str(2000))
         exposure = Decimal("2000.00")
         avg_price = Decimal("1.51819")
         cur_price = Decimal("1.51770")
@@ -23,13 +23,11 @@ class TestLongGBPUSDPosition(unittest.TestCase):
         self.assertEqual(pos_pips, Decimal("-0.00049"))
 
     def test_calculate_profit_base(self):
-        profit_base = self.position.calculate_profit_base()
-        #self.assertEqual(profit_base, Decimal("-0.6457139"))
+        profit_base = self.position.calculate_profit_base(self.position.exposure)
         self.assertEqual(profit_base, Decimal("-0.64571"))
 
     def test_calculate_profit_perc(self):
-        profit_perc = self.position.calculate_profit_perc()
-        #self.assertEqual(profit_perc, Decimal("-0.032285695"))
+        profit_perc = self.position.calculate_profit_perc(self.position.exposure)
         self.assertEqual(profit_perc, Decimal("-0.03229"))
 
 
@@ -52,11 +50,11 @@ class TestShortGBPUSDPosition(unittest.TestCase):
         self.assertEqual(pos_pips, Decimal("0.00049"))
 
     def test_calculate_profit_base(self):
-        profit_base = self.position.calculate_profit_base()
+        profit_base = self.position.calculate_profit_base(self.position.exposure)
         self.assertEqual(profit_base, Decimal("0.64571"))
 
     def test_calculate_profit_perc(self):
-        profit_perc = self.position.calculate_profit_perc()
+        profit_perc = self.position.calculate_profit_perc(self.position.exposure)
         self.assertEqual(profit_perc, Decimal("0.03229"))
 
 

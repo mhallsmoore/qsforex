@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
     heartbeat = 0.5  # Half a second between polling
     events = Queue.Queue()
-    equity = Decimal("99999.65")
+    equity = Decimal("99949.82")
 
     # Trade "Cable"
     instrument = "GBP_USD"

@@ -46,7 +46,7 @@ class Portfolio(object):
             ps.exposure += exposure
             ps.avg_price = new_total_cost/new_total_units
             ps.units = new_total_units
-            ps.update_position_price(remove_price)
+            ps.update_position_price(remove_price, exposure)
             return True
 
     def remove_position_units(
@@ -57,9 +57,9 @@ class Portfolio(object):
         else:
             ps = self.positions[market]
             ps.units -= units
-            exposure = Decimal(units)
+            exposure = Decimal(str(units))
             ps.exposure -= exposure
-            ps.update_position_price(remove_price)
+            ps.update_position_price(remove_price, exposure)
             pnl = ps.calculate_pips() * exposure / remove_price 
             self.balance += pnl.quantize(Decimal("0.01", ROUND_HALF_DOWN))
             return True
@@ -71,7 +71,7 @@ class Portfolio(object):
             return False
         else:
             ps = self.positions[market]
-            ps.update_position_price(remove_price)
+            ps.update_position_price(remove_price, ps.exposure)
             pnl = ps.calculate_pips() * ps.exposure / remove_price 
             self.balance += pnl.quantize(Decimal("0.01", ROUND_HALF_DOWN))
             del[self.positions[market]]
@@ -83,12 +83,12 @@ class Portfolio(object):
         units = int(self.trade_units)
 
         # Check side for correct bid/ask prices
-        #if side == "buy":
-        add_price = Decimal(str(self.ticker.cur_ask))
-        remove_price = Decimal(str(self.ticker.cur_bid))
-        #else:
-            #add_price = self.ticker.cur_bid
-            #remove_price = self.ticker.cur_ask
+        if side == "buy":
+            add_price = Decimal(str(self.ticker.cur_ask))
+            remove_price = Decimal(str(self.ticker.cur_bid))
+        else:
+            add_price = Decimal(str(self.ticker.cur_bid))
+            remove_price = Decimal(str(self.ticker.cur_ask))
         exposure = Decimal(str(units))
 
         # If there is no position, create one
@@ -97,7 +97,7 @@ class Portfolio(object):
                 side, market, units, exposure,
                 add_price, remove_price
             )
-            order = OrderEvent(market, units, "market", "buy")
+            order = OrderEvent(market, units, "market", side)
             self.events.put(order)
         # If a position exists add or remove units
         else:
@@ -114,7 +114,7 @@ class Portfolio(object):
                 if units == ps.units:
                     # Close the position
                     self.close_position(market, remove_price)
-                    order = OrderEvent(market, units, "market", "sell")
+                    order = OrderEvent(market, units, "market", side)
                     self.events.put(order)
                 elif units < ps.units:
                     # Remove from the position
@@ -130,7 +130,7 @@ class Portfolio(object):
                     if side == "buy":
                         new_side = "sell"
                     else:
-                        new_side = "sell"
+                        new_side = "buy"
                     new_exposure = Decimal(str(units))
                     self.add_new_position(
                         new_side, market, new_units, 
