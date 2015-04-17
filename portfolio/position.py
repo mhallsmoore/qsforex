@@ -3,22 +3,31 @@ from decimal import Decimal, getcontext, ROUND_HALF_DOWN
 
 class Position(object):
     def __init__(
-        self, side, market, units, 
-        exposure, avg_price, cur_price
+        self, position_type, market, 
+        units, exposure, bid, ask
     ):
-        self.side = side
+        self.position_type = position_type  # Long or short
         self.market = market
         self.units = units
         self.exposure = Decimal(str(exposure))
-        self.avg_price = Decimal(str(avg_price))
-        self.cur_price = Decimal(str(cur_price))
+
+        # Long or short
+        if self.position_type == "long":
+            self.avg_price = Decimal(str(ask))
+            self.cur_price = Decimal(str(bid))
+        else:
+            self.avg_price = Decimal(str(bid))
+            self.cur_price = Decimal(str(ask))
+
         self.profit_base = self.calculate_profit_base(self.exposure)
         self.profit_perc = self.calculate_profit_perc(self.exposure)
 
     def calculate_pips(self):
         getcontext.prec = 6
         mult = Decimal("1")
-        if self.side == "SHORT":
+        if self.position_type == "long":
+            mult = Decimal("1")
+        elif self.position_type == "short":
             mult = Decimal("-1")
         return (mult * (self.cur_price - self.avg_price)).quantize(
             Decimal("0.00001"), ROUND_HALF_DOWN
@@ -35,8 +44,10 @@ class Position(object):
             Decimal("0.00001"), ROUND_HALF_DOWN
         )
 
-    def update_position_price(self, cur_price, exposure):
-        self.cur_price = cur_price
+    def update_position_price(self, bid, ask, exposure):
+        if self.position_type == "long":
+            self.cur_price = Decimal(str(bid))
+        else:
+            self.cur_price = Decimal(str(ask))
         self.profit_base = self.calculate_profit_base(exposure)
         self.profit_perc = self.calculate_profit_perc(exposure)
-

@@ -4,11 +4,11 @@ import threading
 import time
 from decimal import Decimal, getcontext
 
-from qsforex.execution.execution import OANDAExecutionHandler
+from qsforex.execution.execution import SimulatedExecution
 from qsforex.portfolio.portfolio import Portfolio
 from qsforex import settings
 from qsforex.strategy.strategy import TestStrategy
-from qsforex.streaming.streaming import StreamingForexPrices
+from qsforex.data.price import HistoricCSVPriceHandler
 
 
 def trade(events, strategy, portfolio, execution, heartbeat):
@@ -43,32 +43,25 @@ if __name__ == "__main__":
     events = Queue.Queue()
     equity = settings.EQUITY
 
-    # Trade "Cable"
-    instrument = "GBP_USD"
+    # Load the historic CSV tick data files
+    pairs = ["GBPUSD"]
+    csv_dir = settings.CSV_DATA_DIR
+    if csv_dir is None:
+        print "No historic data directory provided - backtest terminating."
+        sys.exit()
 
-    # Create the OANDA market price streaming class
-    # making sure to provide authentication commands
-    prices = StreamingForexPrices(
-        settings.STREAM_DOMAIN, settings.ACCESS_TOKEN, 
-        settings.ACCOUNT_ID, instrument, events
-    )
+    # Create the historic tick data streaming class
+    prices = HistoricCSVPriceHandler(pairs, events, csv_dir)
 
     # Create the strategy/signal generator, passing the 
     # instrument and the events queue
-    strategy = TestStrategy(instrument, events)
+    strategy = TestStrategy(pairs[0], events)
 
-    # Create the portfolio object that will be used to
-    # compare the OANDA positions with the local, to
-    # ensure backtesting integrity.
+    # Create the portfolio object to track trades
     portfolio = Portfolio(prices, events, equity=equity)
 
-    # Create the execution handler making sure to
-    # provide authentication commands
-    execution = OANDAExecutionHandler(
-        settings.API_DOMAIN, 
-        settings.ACCESS_TOKEN, 
-        settings.ACCOUNT_ID
-    )
+    # Create the simulated execution handler
+    execution = SimulatedExecution()
     
     # Create two separate threads: One for the trading loop
     # and another for the market price streaming class

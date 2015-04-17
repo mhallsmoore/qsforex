@@ -1,3 +1,4 @@
+from decimal import Decimal
 import os
 
 
@@ -14,8 +15,13 @@ ENVIRONMENTS = {
     }
 }
 
+CSV_DATA_DIR = os.environ.get('QSFOREX_CSV_DATA_DIR', None)
+
 DOMAIN = "practice"
 STREAM_DOMAIN = ENVIRONMENTS["streaming"][DOMAIN]
 API_DOMAIN = ENVIRONMENTS["api"][DOMAIN]
 ACCESS_TOKEN = os.environ.get('OANDA_API_ACCESS_TOKEN', None)
 ACCOUNT_ID = os.environ.get('OANDA_API_ACCOUNT_ID', None)
+
+BASE_CURRENCY = "GBP"
+EQUITY = Decimal("100000.00")
