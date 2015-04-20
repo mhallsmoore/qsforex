@@ -2,6 +2,11 @@ class Event(object):
     pass
 
 
+class BacktestEndEvent(Event):
+    def __init__(self):
+        self.type = 'BACKTEST_ENDED'
+
+
 class TickEvent(Event):
     def __init__(self, instrument, time, bid, ask):
         self.type = 'TICK'
@@ -16,7 +21,11 @@ class SignalEvent(Event):
         self.type = 'SIGNAL'
         self.instrument = instrument
         self.order_type = order_type
-        self.side = side        
+        self.side = side
+
+    def __str__(self):
+        return 'EventType: {0} Instrument: {1} OrderType: {2} Side:{3}'\
+            .format(self.type, self.instrument, self.order_type, self.side)
 
 
 class OrderEvent(Event):
@@ -25,4 +34,8 @@ class OrderEvent(Event):
         self.instrument = instrument
         self.units = units
         self.order_type = order_type
-        self.side = side        
+        self.side = side
+
+    def __str__(self):
+        return 'EventType: {0} Instrument: {1} Units: {2} OrderType: {3} Side: {4}'\
+            .format(self.type, self.instrument, self.units, self.order_type, self.side)

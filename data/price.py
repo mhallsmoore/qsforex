@@ -5,9 +5,10 @@ import os
 import os.path
 import numpy as np
 import pandas as pd
+import sys
 
 from qsforex.event.event import TickEvent
-
+from qsforex.event.event import BacktestEndEvent
 
 class PriceHandler(object):
     """
@@ -84,3 +85,5 @@ class HistoricCSVPriceHandler(PriceHandler):
             )
             tev = TickEvent(self.pairs[0], index, row["Bid"], row["Ask"])
             self.events_queue.put(tev)
+        self.events_queue.put(BacktestEndEvent())
+        sys.exit(0)

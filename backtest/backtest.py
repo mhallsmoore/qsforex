@@ -2,6 +2,8 @@ import copy
 import Queue
 import threading
 import time
+import sys
+import logging
 from decimal import Decimal, getcontext
 
 from qsforex.execution.execution import SimulatedExecution
@@ -10,6 +12,7 @@ from qsforex import settings
 from qsforex.strategy.strategy import TestStrategy
 from qsforex.data.price import HistoricCSVPriceHandler
 
+logger = logging.getLogger('main_logger')
 
 def trade(events, strategy, portfolio, execution, heartbeat):
     """
@@ -30,8 +33,13 @@ def trade(events, strategy, portfolio, execution, heartbeat):
                     strategy.calculate_signals(event)
                 elif event.type == 'SIGNAL':
                     portfolio.execute_signal(event)
+                    logger.debug(event)
                 elif event.type == 'ORDER':
                     execution.execute_order(event)
+                    logger.debug(event)
+                elif event.type == 'BACKTEST_ENDED':
+                    logger.debug("Backtest has ended normally")
+                    sys.exit(0)
         time.sleep(heartbeat)
 
 
