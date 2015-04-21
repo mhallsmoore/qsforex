@@ -7,19 +7,25 @@ from decimal import Decimal, getcontext
 from qsforex.execution.execution import SimulatedExecution
 from qsforex.portfolio.portfolio import Portfolio
 from qsforex import settings
-from qsforex.strategy.strategy import TestStrategy
+from qsforex.strategy.strategy import TestStrategy, MovingAverageCrossStrategy
 from qsforex.data.price import HistoricCSVPriceHandler
 
 
-def trade(events, strategy, portfolio, execution, heartbeat):
+def backtest(
+        events, ticker, strategy, portfolio, 
+        execution, heartbeat, max_iters=200000
+    ):
     """
     Carries out an infinite while loop that polls the 
     events queue and directs each event to either the
     strategy component of the execution handler. The
     loop will then pause for "heartbeat" seconds and
-    continue.
+    continue unti the maximum number of iterations is
+    exceeded.
     """
-    while True:
+    iters = 0
+    while True and iters < max_iters:
+        ticker.stream_next_tick()
         try:
             event = events.get(False)
         except Queue.Empty:
@@ -33,13 +39,12 @@ def trade(events, strategy, portfolio, execution, heartbeat):
                 elif event.type == 'ORDER':
                     execution.execute_order(event)
         time.sleep(heartbeat)
+        iters += 1
+    portfolio.output_results()
 
 
 if __name__ == "__main__":
-    # Set the number of decimal places to 2
-    getcontext().prec = 2
-
-    heartbeat = 0.0  # Half a second between polling
+    heartbeat = 0.0
     events = Queue.Queue()
     equity = settings.EQUITY
 
@@ -51,27 +56,19 @@ if __name__ == "__main__":
         sys.exit()
 
     # Create the historic tick data streaming class
-    prices = HistoricCSVPriceHandler(pairs, events, csv_dir)
+    ticker = HistoricCSVPriceHandler(pairs, events, csv_dir)
 
     # Create the strategy/signal generator, passing the 
     # instrument and the events queue
-    strategy = TestStrategy(pairs[0], events)
+    strategy = MovingAverageCrossStrategy(
+        pairs, events, 500, 2000
+    )
 
     # Create the portfolio object to track trades
-    portfolio = Portfolio(prices, events, equity=equity)
+    portfolio = Portfolio(ticker, events, equity=equity)
 
     # Create the simulated execution handler
     execution = SimulatedExecution()
     
-    # Create two separate threads: One for the trading loop
-    # and another for the market price streaming class
-    trade_thread = threading.Thread(
-        target=trade, args=(
-            events, strategy, portfolio, execution, heartbeat
-        )
-    )
-    price_thread = threading.Thread(target=prices.stream_to_queue, args=[])
-    
-    # Start both threads
-    trade_thread.start()
-    price_thread.start()
+    # Carry out the backtest loop
+    backtest(events, ticker, strategy, portfolio, execution, heartbeat)

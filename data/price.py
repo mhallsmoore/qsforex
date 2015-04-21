@@ -3,6 +3,8 @@ import datetime
 from decimal import Decimal, getcontext, ROUND_HALF_DOWN
 import os
 import os.path
+import time
+
 import numpy as np
 import pandas as pd
 
@@ -59,28 +61,119 @@ class HistoricCSVPriceHandler(PriceHandler):
         self.pairs = pairs
         self.events_queue = events_queue
         self.csv_dir = csv_dir
-        self.cur_bid = None
-        self.cur_ask = None
+        self.prices = self._set_up_prices_dict()
+        self.pair_frames = {}
+        self._open_convert_csv_files()
+
+    def _set_up_prices_dict(self):
+        """
+        Due to the way that the Position object handles P&L
+        calculation, it is necessary to include values for not
+        only base/quote currencies but also their reciprocals.
+        This means that this class will contain keys for, e.g.
+        "GBPUSD" and "USDGBP".
+
+        At this stage they are calculated in an ad-hoc manner,
+        but a future TODO is to modify the following code to
+        be more robust and straightforward to follow.
+        """
+        prices_dict = dict(
+            (k, v) for k,v in [
+                (p, {"bid": None, "ask": None, "time": None}) for p in self.pairs
+            ]
+        )
+        inv_prices_dict = dict(
+            (k, v) for k,v in [
+                (
+                    "%s%s" % (p[3:], p[:3]), 
+                    {"bid": None, "ask": None, "time": None}
+                ) for p in self.pairs
+            ]
+        )
+        prices_dict.update(inv_prices_dict)
+        return prices_dict
 
     def _open_convert_csv_files(self):
         """
         Opens the CSV files from the data directory, converting
         them into pandas DataFrames within a pairs dictionary.
+        
+        The function then concatenates all of the separate pairs
+        for a single day into a single data frame that is time 
+        ordered, allowing tick data events to be added to the queue 
+        in a chronological fashion.
         """
-        pair_path = os.path.join(self.csv_dir, '%s.csv' % self.pairs[0])
-        self.pair = pd.io.parsers.read_csv(
-            pair_path, header=True, index_col=0, parse_dates=True,
-            names=("Time", "Ask", "Bid", "AskVolume", "BidVolume")
-        ).iterrows()
+        for p in self.pairs:
+            pair_path = os.path.join(self.csv_dir, '%s.csv' % p)
+            self.pair_frames[p] = pd.io.parsers.read_csv(
+                pair_path, header=True, index_col=0, parse_dates=True,
+                names=("Time", "Ask", "Bid", "AskVolume", "BidVolume")
+            )
+            self.pair_frames[p]["Pair"] = p
+        self.all_pairs = pd.concat(self.pair_frames.values()).sort().iterrows()
+
+    def invert_prices(self, row):
+        """
+        Simply inverts the prices for a particular currency pair.
+        This will turn the bid/ask of "GBPUSD" into bid/ask for
+        "USDGBP" and place them in the prices dictionary.
+        """
+        pair = row["Pair"]
+        bid = row["Bid"]
+        ask = row["Ask"]
+        inv_pair = "%s%s" % (pair[3:], pair[:3])
+        inv_bid = Decimal(str(1.0/bid)).quantize(
+            Decimal("0.00001", ROUND_HALF_DOWN)
+        )
+        inv_ask = Decimal(str(1.0/ask)).quantize(
+            Decimal("0.00001", ROUND_HALF_DOWN)
+        )
+        return inv_pair, inv_bid, inv_ask
+
+    def stream_next_tick(self):
+        """
+        The Backtester has now moved over to a single-threaded
+        model in order to fully reproduce results on each run.
+        This means that the stream_to_queue method is unable to
+        be used and a replacement, called stream_next_tick, is
+        used instead.
+
+        This method is called by the backtesting function outside
+        of this class and places a single tick onto the queue, as
+        well as updating the current bid/ask and inverse bid/ask.
+        """
+        try:
+            index, row = self.all_pairs.next()
+        except StopIteration:
+            return
+        else:
+            self.prices[row["Pair"]]["bid"] = Decimal(str(row["Bid"])).quantize(
+                Decimal("0.00001", ROUND_HALF_DOWN)
+            )
+            self.prices[row["Pair"]]["ask"] = Decimal(str(row["Ask"])).quantize(
+                Decimal("0.00001", ROUND_HALF_DOWN)
+            )
+            self.prices[row["Pair"]]["time"] = index
+            inv_pair, inv_bid, inv_ask = self.invert_prices(row)
+            self.prices[inv_pair]["bid"] = inv_bid
+            self.prices[inv_pair]["ask"] = inv_ask
+            self.prices[inv_pair]["time"] = index
+            tev = TickEvent(row["Pair"], index, row["Bid"], row["Ask"])
+            self.events_queue.put(tev)
 
     def stream_to_queue(self):
         self._open_convert_csv_files()
-        for index, row in self.pair:
-            self.cur_bid = Decimal(str(row["Bid"])).quantize(
+        for index, row in self.all_pairs:
+            self.prices[row["Pair"]]["bid"] = Decimal(str(row["Bid"])).quantize(
                 Decimal("0.00001", ROUND_HALF_DOWN)
             )
-            self.cur_ask = Decimal(str(row["Ask"])).quantize(
+            self.prices[row["Pair"]]["ask"] = Decimal(str(row["Ask"])).quantize(
                 Decimal("0.00001", ROUND_HALF_DOWN)
             )
-            tev = TickEvent(self.pairs[0], index, row["Bid"], row["Ask"])
+            self.prices[row["Pair"]]["time"] = index
+            inv_pair, inv_bid, inv_ask = self.invert_prices(row)
+            self.prices[inv_pair]["bid"] = inv_bid
+            self.prices[inv_pair]["ask"] = inv_ask
+            self.prices[inv_pair]["time"] = index
+            tev = TickEvent(row["Pair"], index, row["Bid"], row["Ask"])
             self.events_queue.put(tev)

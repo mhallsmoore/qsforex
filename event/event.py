@@ -12,11 +12,12 @@ class TickEvent(Event):
 
 
 class SignalEvent(Event):
-    def __init__(self, instrument, order_type, side):
+    def __init__(self, instrument, order_type, side, time):
         self.type = 'SIGNAL'
         self.instrument = instrument
         self.order_type = order_type
         self.side = side        
+        self.time = time  # Time of the last tick that generated the signal
 
 
 class OrderEvent(Event):

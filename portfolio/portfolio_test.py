@@ -1,364 +1,325 @@
 from decimal import Decimal, getcontext, ROUND_HALF_DOWN
 import unittest
 
-from portfolio import Portfolio
+from qsforex.portfolio.portfolio import Portfolio
+from qsforex.portfolio.position_test import TickerMock
+from qsforex.portfolio.position import Position
 
 
 class TestPortfolio(unittest.TestCase):
     def setUp(self):
-        base = "GBP"
+        home_currency = "GBP"
         leverage = 20
         equity = Decimal("100000.00")
         risk_per_trade = Decimal("0.02")
-        ticker = {}
+        ticker = TickerMock()
         events = {}
         self.port = Portfolio(
-            ticker, events, base=base, leverage=leverage,
-            equity=equity, risk_per_trade=risk_per_trade
+            ticker, events, home_currency=home_currency, 
+            leverage=leverage, equity=equity, 
+            risk_per_trade=risk_per_trade
         )
 
     def test_add_position_long(self):
         position_type = "long"
-        market = "GBP/USD"
+        currency_pair = "GBPUSD"
         units = Decimal("2000")
-        exposure = Decimal("2000.00")
-        bid = Decimal("1.51770")
-        ask = Decimal("1.51819")
+        ticker = TickerMock()
         self.port.add_new_position(
-            position_type, market, units, 
-            exposure, bid, ask
+            position_type, 
+            currency_pair, 
+            units, ticker
         )
-        ps = self.port.positions[market]
+        ps = self.port.positions[currency_pair]
 
         self.assertEquals(ps.position_type, position_type)
-        self.assertEquals(ps.market, market)
+        self.assertEquals(ps.currency_pair, currency_pair)
         self.assertEquals(ps.units, units)
-        self.assertEquals(ps.exposure, exposure)
-        self.assertEquals(ps.avg_price, ask)
-        self.assertEquals(ps.cur_price, bid)
+        self.assertEquals(ps.avg_price, ticker.prices[currency_pair]["ask"])
+        self.assertEquals(ps.cur_price, ticker.prices[currency_pair]["bid"])
 
     def test_add_position_short(self):
         position_type = "short"
-        market = "GBP/USD"
+        currency_pair = "GBPUSD"
         units = Decimal("2000")
-        exposure = Decimal("2000.00")
-        bid = Decimal("1.51770")
-        ask = Decimal("1.51819")
-
+        ticker = TickerMock()
         self.port.add_new_position(
-            position_type, market, units, 
-            exposure, bid, ask
+            position_type, 
+            currency_pair, 
+            units, ticker
         )
-        ps = self.port.positions[market]
+        ps = self.port.positions[currency_pair]
 
         self.assertEquals(ps.position_type, position_type)
-        self.assertEquals(ps.market, market)
+        self.assertEquals(ps.currency_pair, currency_pair)
         self.assertEquals(ps.units, units)
-        self.assertEquals(ps.exposure, exposure)
-        self.assertEquals(ps.avg_price, bid)
-        self.assertEquals(ps.cur_price, ask)
+        self.assertEquals(ps.avg_price, ticker.prices[currency_pair]["bid"])
+        self.assertEquals(ps.cur_price, ticker.prices[currency_pair]["ask"])
 
     def test_add_position_units_long(self):
         position_type = "long"
-        market = "GBP/USD"
+        currency_pair = "GBPUSD"
         units = Decimal("2000")
-        exposure = Decimal("2000.00")
-        bid = Decimal("1.51770")
-        ask = Decimal("1.51819")
+        ticker = TickerMock()
 
         # Test for no position
-        market = "EUR/USD"
+        alt_currency_pair = "USDCAD"
         apu = self.port.add_position_units(
-            market, units, exposure,
-            bid, ask
+            alt_currency_pair, units
         )
         self.assertFalse(apu)
 
         # Add a position and test for real position
-        market = "GBP/USD"        
         self.port.add_new_position(
-            position_type, market, units, 
-            exposure, bid, ask
+            position_type, 
+            currency_pair,
+            units, ticker
         )
-        ps = self.port.positions[market]
+        ps = self.port.positions[currency_pair]
 
         # Test for addition of units
-        bid = Decimal("1.51878")
-        ask = Decimal("1.51928")
+        ticker.prices["GBPUSD"]["bid"] = Decimal("1.51878")
+        ticker.prices["GBPUSD"]["ask"] = Decimal("1.51928")
+        ticker.prices["USDGBP"]["bid"] = Decimal("0.65842")
+        ticker.prices["USDGBP"]["ask"] = Decimal("0.65821")
         apu = self.port.add_position_units(
-            market, units, exposure,
-            bid, ask
+            currency_pair, units
         )
         self.assertTrue(apu)
-        self.assertEqual(ps.avg_price, Decimal("1.518735"))
+        self.assertEqual(ps.avg_price, Decimal("1.511385"))
 
     def test_add_position_units_short(self):
         position_type = "short"
-        market = "GBP/USD"
+        currency_pair = "GBPUSD"
         units = Decimal("2000")
-        exposure = Decimal("2000.00")
-        bid = Decimal("1.51770")
-        ask = Decimal("1.51819")
+        ticker = TickerMock()
 
         # Test for no position
-        market = "EUR/USD"
+        alt_currency_pair = "USDCAD"
         apu = self.port.add_position_units(
-            market, units, exposure,
-            bid, ask
+            alt_currency_pair, units
         )
         self.assertFalse(apu)
 
         # Add a position and test for real position
-        market = "GBP/USD"        
         self.port.add_new_position(
-            position_type, market, units, 
-            exposure, bid, ask
+            position_type, 
+            currency_pair,
+            units, ticker
         )
-        ps = self.port.positions[market]
+        ps = self.port.positions[currency_pair]
 
         # Test for addition of units
-        bid = Decimal("1.51878")
-        ask = Decimal("1.51928")
+        ticker.prices["GBPUSD"]["bid"] = Decimal("1.51878")
+        ticker.prices["GBPUSD"]["ask"] = Decimal("1.51928")
+        ticker.prices["USDGBP"]["bid"] = Decimal("0.65842")
+        ticker.prices["USDGBP"]["ask"] = Decimal("0.65821")
         apu = self.port.add_position_units(
-            market, units, exposure,
-            bid, ask
+            currency_pair, units
         )
         self.assertTrue(apu)
-        self.assertEqual(ps.avg_price, Decimal("1.51824"))
+        self.assertEqual(ps.avg_price, Decimal("1.51103"))
 
     def test_remove_position_units_long(self):
         position_type = "long"
+        currency_pair = "GBPUSD"
         units = Decimal("2000")
-        exposure = Decimal("2000.00")
-        bid = Decimal("1.51770")
-        ask = Decimal("1.51819")
+        ticker = TickerMock()
 
         # Test for no position
-        market = "EUR/USD"
+        alt_currency_pair = "USDCAD"
         apu = self.port.remove_position_units(
-            market, units, bid, ask
+            alt_currency_pair, units
         )
         self.assertFalse(apu)
 
         # Add a position and then add units to it
-        market = "GBP/USD"        
         self.port.add_new_position(
-            position_type, market, units, 
-            exposure, bid, ask
+            position_type, 
+            currency_pair,
+            units, ticker
         )
-        ps = self.port.positions[market]
-        bid = Decimal("1.51878")
-        ask = Decimal("1.51928")
-        add_units = 8000
-        add_exposure = Decimal(str(add_units))
+        ps = self.port.positions[currency_pair]
+        # Test for addition of units
+        ticker.prices["GBPUSD"]["bid"] = Decimal("1.51878")
+        ticker.prices["GBPUSD"]["ask"] = Decimal("1.51928")
+        ticker.prices["USDGBP"]["bid"] = Decimal("0.65842")
+        ticker.prices["USDGBP"]["ask"] = Decimal("0.65821")
+        
+        add_units = Decimal("8000")
         apu = self.port.add_position_units(
-            market, add_units, add_exposure,
-            bid, ask
+            currency_pair, add_units
         )
         self.assertEqual(ps.units, 10000)
-        self.assertEqual(ps.exposure, Decimal("10000.00"))
-        self.assertEqual(ps.avg_price, Decimal("1.519062"))
+        self.assertEqual(ps.avg_price, Decimal("1.516122"))
 
         # Test removal of (some) of the units
-        bid = Decimal("1.52017")
-        ask = Decimal("1.52134")
-        remove_units = 3000
+        ticker.prices["GBPUSD"]["bid"] = Decimal("1.52017")
+        ticker.prices["GBPUSD"]["ask"] = Decimal("1.52134")
+        ticker.prices["USDGBP"]["bid"] = Decimal("0.65782")
+        ticker.prices["USDGBP"]["ask"] = Decimal("0.65732")
+
+        remove_units = Decimal("3000")
         rpu = self.port.remove_position_units(
-            market, remove_units, bid, ask
+            currency_pair, remove_units
         )
         self.assertTrue(rpu)
-        self.assertEqual(ps.units, 7000)
-        self.assertEqual(ps.exposure, Decimal("7000.00"))
-        self.assertEqual(ps.profit_base, Decimal("2.19054"))
-        self.assertEqual(self.port.balance, Decimal("100002.19"))
+        self.assertEqual(ps.units, Decimal("7000"))
+        self.assertEqual(self.port.balance, Decimal("100007.99"))
     
     def test_remove_position_units_short(self):
         position_type = "short"
+        currency_pair = "GBPUSD"
         units = Decimal("2000")
-        exposure = Decimal("2000.00")
-        bid = Decimal("1.51770")
-        ask = Decimal("1.51819")
+        ticker = TickerMock()
 
         # Test for no position
-        market = "EUR/USD"
+        alt_currency_pair = "USDCAD"
         apu = self.port.remove_position_units(
-            market, units, bid, ask
+            alt_currency_pair, units
         )
         self.assertFalse(apu)
 
         # Add a position and then add units to it
-        market = "GBP/USD"        
         self.port.add_new_position(
-            position_type, market, units, 
-            exposure, bid, ask
+            position_type, 
+            currency_pair,
+            units, ticker
         )
-        ps = self.port.positions[market]
-        bid = Decimal("1.51878")
-        ask = Decimal("1.51928")
-        add_units = 8000
-        add_exposure = Decimal(str(add_units))
+        ps = self.port.positions[currency_pair]
+        # Test for addition of units
+        ticker.prices["GBPUSD"]["bid"] = Decimal("1.51878")
+        ticker.prices["GBPUSD"]["ask"] = Decimal("1.51928")
+        ticker.prices["USDGBP"]["bid"] = Decimal("0.65842")
+        ticker.prices["USDGBP"]["ask"] = Decimal("0.65821")
+        
+        add_units = Decimal("8000")
         apu = self.port.add_position_units(
-            market, add_units, add_exposure,
-            bid, ask
+            currency_pair, add_units
         )
         self.assertEqual(ps.units, 10000)
-        self.assertEqual(ps.exposure, Decimal("10000.00"))
-        self.assertEqual(ps.avg_price, Decimal("1.518564"))
+        self.assertEqual(ps.avg_price, Decimal("1.51568"))
 
         # Test removal of (some) of the units
-        bid = Decimal("1.52017")
-        ask = Decimal("1.52134")
-        remove_units = 3000
+        ticker.prices["GBPUSD"]["bid"] = Decimal("1.52017")
+        ticker.prices["GBPUSD"]["ask"] = Decimal("1.52134")
+        ticker.prices["USDGBP"]["bid"] = Decimal("0.65782")
+        ticker.prices["USDGBP"]["ask"] = Decimal("0.65732")
+
+        remove_units = Decimal("3000")
         rpu = self.port.remove_position_units(
-            market, remove_units, bid, ask
+            currency_pair, remove_units
         )
         self.assertTrue(rpu)
-        self.assertEqual(ps.units, 7000)
-        self.assertEqual(ps.exposure, Decimal("7000.00"))
-        self.assertEqual(ps.profit_base, Decimal("-5.48201"))
-        self.assertEqual(self.port.balance, Decimal("99994.52"))
+        self.assertEqual(ps.units, Decimal("7000"))
+        self.assertEqual(self.port.balance, Decimal("99988.84"))
 
     def test_close_position_long(self):
         position_type = "long"
+        currency_pair = "GBPUSD"
         units = Decimal("2000")
-        exposure = Decimal("2000.00")
-        bid = Decimal("1.51770")
-        ask = Decimal("1.51819")
+        ticker = TickerMock()
 
         # Test for no position
-        market = "EUR/USD"
-        cp = self.port.close_position(
-            market, bid, ask
+        alt_currency_pair = "USDCAD"
+        apu = self.port.remove_position_units(
+            alt_currency_pair, units
         )
-        self.assertFalse(cp)
+        self.assertFalse(apu)
 
-        # Add a position and then close it
-        # Will lose money on the spread
-        market = "GBP/USD" 
+        # Add a position and then add units to it
         self.port.add_new_position(
-            position_type, market, units, 
-            exposure, bid, ask
+            position_type, 
+            currency_pair,
+            units, ticker
         )
-        ps = self.port.positions[market]
-        cp = self.port.close_position(
-            market, bid, ask
-        )
-        self.assertTrue(cp)
-        self.assertRaises(ps)  # Key doesn't exist
-        self.assertEqual(self.port.balance, Decimal("99999.35"))
-
-        # Add 2000, add another 8000, remove 3000 and then 
-        # close the position. Balance should be as expected 
-        # for a multi-leg transaction.
-        self.port.add_new_position(
-            position_type, market, units, 
-            exposure, bid, ask
-        )
-        ps = self.port.positions[market]
-
-        # Add 8000 units
-        bid = Decimal("1.51878")
-        ask = Decimal("1.51928")      
-        add_units = 8000
-        add_exposure = Decimal(str(add_units))
+        ps = self.port.positions[currency_pair]
+        # Test for addition of units
+        ticker.prices["GBPUSD"]["bid"] = Decimal("1.51878")
+        ticker.prices["GBPUSD"]["ask"] = Decimal("1.51928")
+        ticker.prices["USDGBP"]["bid"] = Decimal("0.65842")
+        ticker.prices["USDGBP"]["ask"] = Decimal("0.65821")
+        
+        add_units = Decimal("8000")
         apu = self.port.add_position_units(
-            market, add_units, 
-            add_exposure, bid, ask
+            currency_pair, add_units
         )
         self.assertEqual(ps.units, 10000)
-        self.assertEqual(ps.exposure, Decimal("10000.00"))
-        self.assertEqual(ps.avg_price, Decimal("1.519062"))
+        self.assertEqual(ps.avg_price, Decimal("1.516122"))
 
-        # Remove 3000 units
-        bid = Decimal("1.52017")
-        ask = Decimal("1.52134")
-        remove_units = 3000
+        # Test removal of (some) of the units
+        ticker.prices["GBPUSD"]["bid"] = Decimal("1.52017")
+        ticker.prices["GBPUSD"]["ask"] = Decimal("1.52134")
+        ticker.prices["USDGBP"]["bid"] = Decimal("0.65782")
+        ticker.prices["USDGBP"]["ask"] = Decimal("0.65732")
+
+        remove_units = Decimal("3000")
         rpu = self.port.remove_position_units(
-            market, remove_units, bid, ask
+            currency_pair, remove_units
         )
-        self.assertEqual(ps.units, 7000)
-        self.assertEqual(ps.exposure, Decimal("7000.00"))
-        self.assertEqual(ps.profit_base, Decimal("2.19054"))
-        self.assertEqual(self.port.balance, Decimal("100001.54"))
+        self.assertTrue(rpu)
+        self.assertEqual(ps.units, Decimal("7000"))
+        self.assertEqual(self.port.balance, Decimal("100007.99"))
 
         # Close the position
-        cp = self.port.close_position(
-            market, bid, ask
-        )
+        cp = self.port.close_position(currency_pair)
         self.assertTrue(cp)
         self.assertRaises(ps)  # Key doesn't exist
-        self.assertEqual(self.port.balance, Decimal("100006.65"))
+        self.assertEqual(self.port.balance, Decimal("100026.64"))
 
     def test_close_position_short(self):
         position_type = "short"
+        currency_pair = "GBPUSD"
         units = Decimal("2000")
-        exposure = Decimal("2000.00")
-        bid = Decimal("1.51770")
-        ask = Decimal("1.51819")
+        ticker = TickerMock()
 
         # Test for no position
-        market = "EUR/USD"
-        cp = self.port.close_position(
-            market, bid, ask
+        alt_currency_pair = "USDCAD"
+        apu = self.port.remove_position_units(
+            alt_currency_pair, units
         )
-        self.assertFalse(cp)
+        self.assertFalse(apu)
 
-        # Add a position and then close it
-        # Will lose money on the spread
-        market = "GBP/USD" 
+        # Add a position and then add units to it
         self.port.add_new_position(
-            position_type, market, units, 
-            exposure, bid, ask
+            position_type, 
+            currency_pair,
+            units, ticker
         )
-        ps = self.port.positions[market]
-        cp = self.port.close_position(
-            market, bid, ask
-        )
-        self.assertTrue(cp)
-        self.assertRaises(ps)  # Key doesn't exist
-        self.assertEqual(self.port.balance, Decimal("99999.35"))
-
-        # Add 2000, add another 8000, remove 3000 and then 
-        # close the position. Balance should be as expected 
-        # for a multi-leg transaction.
-        self.port.add_new_position(
-            position_type, market, units, 
-            exposure, bid, ask
-        )
-        ps = self.port.positions[market]
-
-        # Add 8000 units
-        bid = Decimal("1.51878")
-        ask = Decimal("1.51928")      
-        add_units = 8000
-        add_exposure = Decimal(str(add_units))
+        ps = self.port.positions[currency_pair]
+        # Test for addition of units
+        ticker.prices["GBPUSD"]["bid"] = Decimal("1.51878")
+        ticker.prices["GBPUSD"]["ask"] = Decimal("1.51928")
+        ticker.prices["USDGBP"]["bid"] = Decimal("0.65842")
+        ticker.prices["USDGBP"]["ask"] = Decimal("0.65821")
+        
+        add_units = Decimal("8000")
         apu = self.port.add_position_units(
-            market, add_units, 
-            add_exposure, bid, ask
+            currency_pair, add_units
         )
         self.assertEqual(ps.units, 10000)
-        self.assertEqual(ps.exposure, Decimal("10000.00"))
-        self.assertEqual(ps.avg_price, Decimal("1.518564"))
+        self.assertEqual(ps.avg_price, Decimal("1.51568"))
 
-        # Remove 3000 units
-        bid = Decimal("1.52017")
-        ask = Decimal("1.52134")
-        remove_units = 3000
+        # Test removal of (some) of the units
+        ticker.prices["GBPUSD"]["bid"] = Decimal("1.52017")
+        ticker.prices["GBPUSD"]["ask"] = Decimal("1.52134")
+        ticker.prices["USDGBP"]["bid"] = Decimal("0.65782")
+        ticker.prices["USDGBP"]["ask"] = Decimal("0.65732")
+
+        remove_units = Decimal("3000")
         rpu = self.port.remove_position_units(
-            market, remove_units, bid, ask
+            currency_pair, remove_units
         )
-        self.assertEqual(ps.units, 7000)
-        self.assertEqual(ps.exposure, Decimal("7000.00"))
-        self.assertEqual(ps.profit_base, Decimal("-5.48201"))
-        self.assertEqual(self.port.balance, Decimal("99993.87"))
+        self.assertTrue(rpu)
+        self.assertEqual(ps.units, Decimal("7000"))
+        self.assertEqual(self.port.balance, Decimal("99988.84"))
 
         # Close the position
-        cp = self.port.close_position(
-            market, bid, ask
-        )
+        cp = self.port.close_position(currency_pair)
         self.assertTrue(cp)
         self.assertRaises(ps)  # Key doesn't exist
-        self.assertEqual(self.port.balance, Decimal("99981.08"))
+        self.assertEqual(self.port.balance, Decimal("99962.80"))
+
 
 if __name__ == "__main__":
     unittest.main()
