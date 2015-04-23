@@ -8,7 +8,7 @@ from qsforex.execution.execution import OANDAExecutionHandler
 from qsforex.portfolio.portfolio import Portfolio
 from qsforex import settings
 from qsforex.strategy.strategy import TestStrategy
-from qsforex.streaming.streaming import StreamingForexPrices
+from qsforex.data.streaming import StreamingForexPrices
 
 
 def trade(events, strategy, portfolio, execution, heartbeat):
@@ -44,18 +44,18 @@ if __name__ == "__main__":
     equity = settings.EQUITY
 
     # Trade "Cable"
-    instrument = "GBP_USD"
+    pairs = ["GBPUSD"]
 
     # Create the OANDA market price streaming class
     # making sure to provide authentication commands
     prices = StreamingForexPrices(
         settings.STREAM_DOMAIN, settings.ACCESS_TOKEN, 
-        settings.ACCOUNT_ID, instrument, events
+        settings.ACCOUNT_ID, pairs, events
     )
 
     # Create the strategy/signal generator, passing the 
     # instrument and the events queue
-    strategy = TestStrategy(instrument, events)
+    strategy = TestStrategy(pairs, events)
 
     # Create the portfolio object that will be used to
     # compare the OANDA positions with the local, to

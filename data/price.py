@@ -1,6 +1,5 @@
-from abc import ABCMeta, abstractmethod
 import datetime
-from decimal import Decimal, getcontext, ROUND_HALF_DOWN
+from decimal import Decimal, ROUND_HALF_DOWN
 import os
 import os.path
 import time
@@ -26,15 +25,48 @@ class PriceHandler(object):
     backtesting suite.
     """
 
-    __metaclass__ = ABCMeta
+    def _set_up_prices_dict(self):
+        """
+        Due to the way that the Position object handles P&L
+        calculation, it is necessary to include values for not
+        only base/quote currencies but also their reciprocals.
+        This means that this class will contain keys for, e.g.
+        "GBPUSD" and "USDGBP".
 
-    @abstractmethod
-    def stream_to_queue(self):
+        At this stage they are calculated in an ad-hoc manner,
+        but a future TODO is to modify the following code to
+        be more robust and straightforward to follow.
         """
-        Streams a sequence of tick data events (timestamp, bid, ask)
-        tuples to the events queue.
+        prices_dict = dict(
+            (k, v) for k,v in [
+                (p, {"bid": None, "ask": None, "time": None}) for p in self.pairs
+            ]
+        )
+        inv_prices_dict = dict(
+            (k, v) for k,v in [
+                (
+                    "%s%s" % (p[3:], p[:3]), 
+                    {"bid": None, "ask": None, "time": None}
+                ) for p in self.pairs
+            ]
+        )
+        prices_dict.update(inv_prices_dict)
+        return prices_dict
+
+    def invert_prices(self, pair, bid, ask):
         """
-        raise NotImplementedError("Should implement stream_to_queue()")
+        Simply inverts the prices for a particular currency pair.
+        This will turn the bid/ask of "GBPUSD" into bid/ask for
+        "USDGBP" and place them in the prices dictionary.
+        """
+        inv_pair = "%s%s" % (pair[3:], pair[:3])
+        inv_bid = (Decimal("1.0")/bid).quantize(
+            Decimal("0.00001", ROUND_HALF_DOWN)
+        )
+        inv_ask = (Decimal("1.0")/ask).quantize(
+            Decimal("0.00001", ROUND_HALF_DOWN)
+        )
+        return inv_pair, inv_bid, inv_ask
 
 
 class HistoricCSVPriceHandler(PriceHandler):
@@ -65,34 +97,6 @@ class HistoricCSVPriceHandler(PriceHandler):
         self.pair_frames = {}
         self._open_convert_csv_files()
 
-    def _set_up_prices_dict(self):
-        """
-        Due to the way that the Position object handles P&L
-        calculation, it is necessary to include values for not
-        only base/quote currencies but also their reciprocals.
-        This means that this class will contain keys for, e.g.
-        "GBPUSD" and "USDGBP".
-
-        At this stage they are calculated in an ad-hoc manner,
-        but a future TODO is to modify the following code to
-        be more robust and straightforward to follow.
-        """
-        prices_dict = dict(
-            (k, v) for k,v in [
-                (p, {"bid": None, "ask": None, "time": None}) for p in self.pairs
-            ]
-        )
-        inv_prices_dict = dict(
-            (k, v) for k,v in [
-                (
-                    "%s%s" % (p[3:], p[:3]), 
-                    {"bid": None, "ask": None, "time": None}
-                ) for p in self.pairs
-            ]
-        )
-        prices_dict.update(inv_prices_dict)
-        return prices_dict
-
     def _open_convert_csv_files(self):
         """
         Opens the CSV files from the data directory, converting
@@ -112,24 +116,6 @@ class HistoricCSVPriceHandler(PriceHandler):
             self.pair_frames[p]["Pair"] = p
         self.all_pairs = pd.concat(self.pair_frames.values()).sort().iterrows()
 
-    def invert_prices(self, row):
-        """
-        Simply inverts the prices for a particular currency pair.
-        This will turn the bid/ask of "GBPUSD" into bid/ask for
-        "USDGBP" and place them in the prices dictionary.
-        """
-        pair = row["Pair"]
-        bid = row["Bid"]
-        ask = row["Ask"]
-        inv_pair = "%s%s" % (pair[3:], pair[:3])
-        inv_bid = Decimal(str(1.0/bid)).quantize(
-            Decimal("0.00001", ROUND_HALF_DOWN)
-        )
-        inv_ask = Decimal(str(1.0/ask)).quantize(
-            Decimal("0.00001", ROUND_HALF_DOWN)
-        )
-        return inv_pair, inv_bid, inv_ask
-
     def stream_next_tick(self):
         """
         The Backtester has now moved over to a single-threaded
@@ -147,33 +133,25 @@ class HistoricCSVPriceHandler(PriceHandler):
         except StopIteration:
             return
         else:
-            self.prices[row["Pair"]]["bid"] = Decimal(str(row["Bid"])).quantize(
+            pair = row["Pair"]
+            bid = Decimal(str(row["Bid"])).quantize(
                 Decimal("0.00001", ROUND_HALF_DOWN)
             )
-            self.prices[row["Pair"]]["ask"] = Decimal(str(row["Ask"])).quantize(
+            ask = Decimal(str(row["Ask"])).quantize(
                 Decimal("0.00001", ROUND_HALF_DOWN)
             )
-            self.prices[row["Pair"]]["time"] = index
-            inv_pair, inv_bid, inv_ask = self.invert_prices(row)
-            self.prices[inv_pair]["bid"] = inv_bid
-            self.prices[inv_pair]["ask"] = inv_ask
-            self.prices[inv_pair]["time"] = index
-            tev = TickEvent(row["Pair"], index, row["Bid"], row["Ask"])
-            self.events_queue.put(tev)
 
-    def stream_to_queue(self):
-        self._open_convert_csv_files()
-        for index, row in self.all_pairs:
-            self.prices[row["Pair"]]["bid"] = Decimal(str(row["Bid"])).quantize(
-                Decimal("0.00001", ROUND_HALF_DOWN)
-            )
-            self.prices[row["Pair"]]["ask"] = Decimal(str(row["Ask"])).quantize(
-                Decimal("0.00001", ROUND_HALF_DOWN)
-            )
-            self.prices[row["Pair"]]["time"] = index
-            inv_pair, inv_bid, inv_ask = self.invert_prices(row)
+            # Create decimalised prices for traded pair
+            self.prices[pair]["bid"] = bid
+            self.prices[pair]["ask"] = ask
+            self.prices[pair]["time"] = index
+
+            # Create decimalised prices for inverted pair
+            inv_pair, inv_bid, inv_ask = self.invert_prices(pair, bid, ask)
             self.prices[inv_pair]["bid"] = inv_bid
             self.prices[inv_pair]["ask"] = inv_ask
             self.prices[inv_pair]["time"] = index
-            tev = TickEvent(row["Pair"], index, row["Bid"], row["Ask"])
+
+            # Create the tick event for the queue
+            tev = TickEvent(pair, index, bid, ask)
             self.events_queue.put(tev)

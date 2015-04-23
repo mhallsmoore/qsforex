@@ -42,12 +42,13 @@ class OANDAExecutionHandler(ExecutionHandler):
         return httplib.HTTPSConnection(self.domain)
 
     def execute_order(self, event):
+        instrument = "%s_%s" % (event.instrument[:3], event.instrument[3:])
         headers = {
             "Content-Type": "application/x-www-form-urlencoded",
             "Authorization": "Bearer " + self.access_token
         }
         params = urllib.urlencode({
-            "instrument" : event.instrument,
+            "instrument" : instrument,
             "units" : event.units,
             "type" : event.order_type,
             "side" : event.side
