@@ -1,5 +1,10 @@
+from __future__ import print_function
+
 import copy
-import Queue
+try:
+    import Queue as queue
+except ImportError:
+    import queue
 import threading
 import time
 from decimal import Decimal, getcontext
@@ -28,7 +33,7 @@ def backtest(
         ticker.stream_next_tick()
         try:
             event = events.get(False)
-        except Queue.Empty:
+        except queue.Empty:
             pass
         else:
             if event is not None:
@@ -45,14 +50,14 @@ def backtest(
 
 if __name__ == "__main__":
     heartbeat = 0.0
-    events = Queue.Queue()
+    events = queue.Queue()
     equity = settings.EQUITY
 
     # Load the historic CSV tick data files
     pairs = ["GBPUSD"]
     csv_dir = settings.CSV_DATA_DIR
     if csv_dir is None:
-        print "No historic data directory provided - backtest terminating."
+        print("No historic data directory provided - backtest terminating.")
         sys.exit()
 
     # Create the historic tick data streaming class

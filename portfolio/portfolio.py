@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from copy import deepcopy
 from decimal import Decimal, getcontext, ROUND_HALF_DOWN
 import os
@@ -73,7 +75,7 @@ class Portfolio(object):
         out_file = os.path.join(OUTPUT_RESULTS_DIR, filename)
         df_equity = pd.DataFrame.from_records(self.equity, index='time')
         df_equity.to_csv(out_file)
-        print "Simulation complete and results exported to %s" % filename
+        print("Simulation complete and results exported to %s" % filename)
 
     def execute_signal(self, signal_event):       
         side = signal_event.side
@@ -123,5 +125,6 @@ class Portfolio(object):
         order = OrderEvent(currency_pair, units, "market", side)
         self.events.put(order)
 
-        print "Balance: %0.2f" % self.balance
+        print("Balance: %0.2f" % self.balance)
         self.append_equity_row(time, self.balance)
+        

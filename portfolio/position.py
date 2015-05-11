@@ -92,7 +92,8 @@ class Position(object):
         self.update_position_price()
         # Calculate PnL
         pnl = self.calculate_pips() * qh_close * dec_units
-        return pnl.quantize(Decimal("0.01", ROUND_HALF_DOWN))
+        getcontext().rounding = ROUND_HALF_DOWN
+        return pnl.quantize(Decimal("0.01"))
 
     def close_position(self):
         ticker_cp = self.ticker.prices[self.currency_pair]
@@ -106,4 +107,5 @@ class Position(object):
         self.update_position_price()
         # Calculate PnL
         pnl = self.calculate_pips() * qh_close * self.units
-        return pnl.quantize(Decimal("0.01", ROUND_HALF_DOWN))
+        getcontext().rounding = ROUND_HALF_DOWN
+        return pnl.quantize(Decimal("0.01"))

@@ -1,8 +1,11 @@
 import copy
-import Queue
+from decimal import Decimal, getcontext
+try:
+    import Queue as queue
+except ImportError:
+    import queue
 import threading
 import time
-from decimal import Decimal, getcontext
 
 from qsforex.execution.execution import OANDAExecutionHandler
 from qsforex.portfolio.portfolio import Portfolio
@@ -22,7 +25,7 @@ def trade(events, strategy, portfolio, execution, heartbeat):
     while True:
         try:
             event = events.get(False)
-        except Queue.Empty:
+        except queue.Empty:
             pass
         else:
             if event is not None:
@@ -40,7 +43,7 @@ if __name__ == "__main__":
     getcontext().prec = 2
 
     heartbeat = 0.0  # Half a second between polling
-    events = Queue.Queue()
+    events = queue.Queue()
     equity = settings.EQUITY
 
     # Trade "Cable"

@@ -1,4 +1,4 @@
-from decimal import Decimal, getcontext
+from decimal import Decimal
 import unittest
 
 from position import Position
@@ -28,7 +28,6 @@ class TestLongGBPUSDPosition(unittest.TestCase):
     denominated currency of GBP, using 2,000 units of GBP/USD.
     """
     def setUp(self):
-        getcontext.prec = 2
         home_currency = "GBP"
         position_type = "long"
         currency_pair = "GBPUSD"
@@ -78,7 +77,6 @@ class TestShortGBPUSDPosition(unittest.TestCase):
     denominated currency of GBP, using 2,000 units of GBP/USD.
     """
     def setUp(self):
-        getcontext.prec = 2
         home_currency = "GBP"
         position_type = "short"
         currency_pair = "GBPUSD"
@@ -132,7 +130,6 @@ class TestLongEURUSDPosition(unittest.TestCase):
     denominated currency of GBP, using 2,000 units of EUR/USD.
     """
     def setUp(self):
-        getcontext.prec = 2
         home_currency = "GBP"
         position_type = "long"
         currency_pair = "EURUSD"
@@ -183,7 +180,6 @@ class TestLongEURUSDPosition(unittest.TestCase):
     denominated currency of GBP, using 2,000 units of EUR/USD.
     """
     def setUp(self):
-        getcontext.prec = 2
         home_currency = "GBP"
         position_type = "short"
         currency_pair = "EURUSD"

@@ -1,4 +1,6 @@
-from decimal import Decimal, ROUND_HALF_DOWN
+from __future__ import print_function
+
+from decimal import Decimal, getcontext, ROUND_HALF_DOWN
 import requests
 import json
 
@@ -24,18 +26,20 @@ class StreamingForexPrices(PriceHandler):
         This will turn the bid/ask of "GBPUSD" into bid/ask for
         "USDGBP" and place them in the prices dictionary.
         """
+        getcontext().rounding = ROUND_HALF_DOWN
         inv_pair = "%s%s" % (pair[3:], pair[:3])
         inv_bid = (Decimal("1.0")/bid).quantize(
-            Decimal("0.00001", ROUND_HALF_DOWN)
+            Decimal("0.00001")
         )
         inv_ask = (Decimal("1.0")/ask).quantize(
-            Decimal("0.00001", ROUND_HALF_DOWN)
+            Decimal("0.00001")
         )
         return inv_pair, inv_bid, inv_ask
 
     def connect_to_stream(self):
         pairs_oanda = ["%s_%s" % (p[:3], p[3:]) for p in self.pairs]
         try:
+            requests.packages.urllib3.disable_warnings()
             s = requests.Session()
             url = "https://" + self.domain + "/v1/prices"
             headers = {'Authorization' : 'Bearer ' + self.access_token}
@@ -46,7 +50,7 @@ class StreamingForexPrices(PriceHandler):
             return resp
         except Exception as e:
             s.close()
-            print "Caught exception when connecting to stream\n" + str(e) 
+            print("Caught exception when connecting to stream\n" + str(e))
 
     def stream_to_queue(self):
         response = self.connect_to_stream()
@@ -55,19 +59,21 @@ class StreamingForexPrices(PriceHandler):
         for line in response.iter_lines(1):
             if line:
                 try:
-                    msg = json.loads(line)
+                    dline = line.decode('utf-8')
+                    msg = json.loads(dline)
                 except Exception as e:
-                    print "Caught exception when converting message into json\n" + str(e)
+                    print("Caught exception when converting message into json\n" + str(e))
                     return
-                if msg.has_key("instrument") or msg.has_key("tick"):
-                    print msg
+                if "instrument" in msg or "tick" in msg:
+                    print(msg)
+                    getcontext().rounding = ROUND_HALF_DOWN 
                     instrument = msg["tick"]["instrument"].replace("_", "")
                     time = msg["tick"]["time"]
                     bid = Decimal(str(msg["tick"]["bid"])).quantize(
-                        Decimal("0.00001", ROUND_HALF_DOWN)
+                        Decimal("0.00001")
                     )
                     ask = Decimal(str(msg["tick"]["ask"])).quantize(
-                        Decimal("0.00001", ROUND_HALF_DOWN)
+                        Decimal("0.00001")
                     )
                     self.prices[instrument]["bid"] = bid
                     self.prices[instrument]["ask"] = ask

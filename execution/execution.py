@@ -1,6 +1,16 @@
+from __future__ import print_function
+
 from abc import ABCMeta, abstractmethod
-import httplib
-import urllib
+try:
+    import httplib
+except ImportError:
+    import http.client as httplib
+try:
+    from urllib import urlencode
+except ImportError:
+    from urllib.parse import urlencode
+import urllib3
+urllib3.disable_warnings()
 
 
 class ExecutionHandler(object):
@@ -47,7 +57,7 @@ class OANDAExecutionHandler(ExecutionHandler):
             "Content-Type": "application/x-www-form-urlencoded",
             "Authorization": "Bearer " + self.access_token
         }
-        params = urllib.urlencode({
+        params = urlencode({
             "instrument" : instrument,
             "units" : event.units,
             "type" : event.order_type,
@@ -59,5 +69,5 @@ class OANDAExecutionHandler(ExecutionHandler):
             params, headers
         )
         response = self.conn.getresponse().read()
-        print response
+        print(response)
         

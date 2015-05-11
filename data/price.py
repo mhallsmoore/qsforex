@@ -1,5 +1,5 @@
 import datetime
-from decimal import Decimal, ROUND_HALF_DOWN
+from decimal import Decimal, getcontext, ROUND_HALF_DOWN
 import os
 import os.path
 import time
@@ -59,12 +59,13 @@ class PriceHandler(object):
         This will turn the bid/ask of "GBPUSD" into bid/ask for
         "USDGBP" and place them in the prices dictionary.
         """
+        getcontext().rounding = ROUND_HALF_DOWN
         inv_pair = "%s%s" % (pair[3:], pair[:3])
         inv_bid = (Decimal("1.0")/bid).quantize(
-            Decimal("0.00001", ROUND_HALF_DOWN)
+            Decimal("0.00001")
         )
         inv_ask = (Decimal("1.0")/ask).quantize(
-            Decimal("0.00001", ROUND_HALF_DOWN)
+            Decimal("0.00001")
         )
         return inv_pair, inv_bid, inv_ask
 
@@ -129,16 +130,17 @@ class HistoricCSVPriceHandler(PriceHandler):
         well as updating the current bid/ask and inverse bid/ask.
         """
         try:
-            index, row = self.all_pairs.next()
+            index, row = next(self.all_pairs)
         except StopIteration:
             return
         else:
+            getcontext().rounding = ROUND_HALF_DOWN
             pair = row["Pair"]
             bid = Decimal(str(row["Bid"])).quantize(
-                Decimal("0.00001", ROUND_HALF_DOWN)
+                Decimal("0.00001")
             )
             ask = Decimal(str(row["Ask"])).quantize(
-                Decimal("0.00001", ROUND_HALF_DOWN)
+                Decimal("0.00001")
             )
 
             # Create decimalised prices for traded pair
