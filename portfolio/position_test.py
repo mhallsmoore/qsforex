@@ -11,11 +11,13 @@ class TickerMock(object):
     """
 
     def __init__(self):
+        self.pairs = ["GBPUSD", "EURUSD"]
         self.prices = {
             "GBPUSD": {"bid": Decimal("1.50328"), "ask": Decimal("1.50349")},
             "USDGBP": {"bid": Decimal("0.66521"), "ask": Decimal("0.66512")},
             "EURUSD": {"bid": Decimal("1.07832"), "ask": Decimal("1.07847")}
         }
+
 
 
 # =====================================

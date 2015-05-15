@@ -39,6 +39,7 @@ def backtest(
             if event is not None:
                 if event.type == 'TICK':
                     strategy.calculate_signals(event)
+                    portfolio.update_portfolio(event)
                 elif event.type == 'SIGNAL':
                     portfolio.execute_signal(event)
                 elif event.type == 'ORDER':
@@ -70,7 +71,9 @@ if __name__ == "__main__":
     )
 
     # Create the portfolio object to track trades
-    portfolio = Portfolio(ticker, events, equity=equity)
+    portfolio = Portfolio(
+        ticker, events, equity=equity, backtest=True
+    )
 
     # Create the simulated execution handler
     execution = SimulatedExecution()
