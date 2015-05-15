@@ -31,6 +31,7 @@ def trade(events, strategy, portfolio, execution, heartbeat):
             if event is not None:
                 if event.type == 'TICK':
                     strategy.calculate_signals(event)
+                    portfolio.update_portfolio(event)
                 elif event.type == 'SIGNAL':
                     portfolio.execute_signal(event)
                 elif event.type == 'ORDER':
@@ -63,7 +64,9 @@ if __name__ == "__main__":
     # Create the portfolio object that will be used to
     # compare the OANDA positions with the local, to
     # ensure backtesting integrity.
-    portfolio = Portfolio(prices, events, equity=equity)
+    portfolio = Portfolio(
+        prices, events, equity=equity, backtest=False
+    )
 
     # Create the execution handler making sure to
     # provide authentication commands
