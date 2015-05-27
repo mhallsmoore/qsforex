@@ -43,7 +43,7 @@ if __name__ == "__main__":
     # Set the number of decimal places to 2
     getcontext().prec = 2
 
-    heartbeat = 0.0  # Half a second between polling
+    heartbeat = 0.0  # Time in seconds between polling
     events = queue.Queue()
     equity = settings.EQUITY
 
