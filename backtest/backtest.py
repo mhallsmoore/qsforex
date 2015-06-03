@@ -18,7 +18,7 @@ from qsforex.data.price import HistoricCSVPriceHandler
 
 def backtest(
         events, ticker, strategy, portfolio, 
-        execution, heartbeat, max_iters=200000
+        execution, heartbeat, max_iters=5000000
     ):
     """
     Carries out an infinite while loop that polls the 
@@ -29,12 +29,11 @@ def backtest(
     exceeded.
     """
     iters = 0
-    while True and iters < max_iters:
-        ticker.stream_next_tick()
+    while iters < max_iters and ticker.continue_backtest:
         try:
             event = events.get(False)
         except queue.Empty:
-            pass
+            ticker.stream_next_tick()
         else:
             if event is not None:
                 if event.type == 'TICK':
@@ -54,7 +53,7 @@ if __name__ == "__main__":
     events = queue.Queue()
     equity = settings.EQUITY
 
-    # Load the historic CSV tick data files
+    # Load the historic CSV tick data filesw
     pairs = ["GBPUSD"]
     csv_dir = settings.CSV_DATA_DIR
     if csv_dir is None:
