@@ -137,11 +137,15 @@ class HistoricCSVPriceHandler(PriceHandler):
         """
         for p in self.pairs:
             pair_path = os.path.join(self.csv_dir, '%s_%s.csv' % (p, date_str))
-            self.pair_frames[p] = pd.io.parsers.read_csv(
-                pair_path, header=True, index_col=0, 
-                parse_dates=True, dayfirst=True,
-                names=("Time", "Ask", "Bid", "AskVolume", "BidVolume")
-            )
+            if 2 > sum(1 for line in open(pair_path)):
+                # Use an empty DataFrame if the CSV file contains only the header row
+                self.pair_frames[p] = pd.DataFrame()
+            else:
+                self.pair_frames[p] = pd.io.parsers.read_csv(
+                    pair_path, header=1, index_col=0,
+                    parse_dates=True, dayfirst=True,
+                    names=("Time", "Ask", "Bid", "AskVolume", "BidVolume")
+                )
             self.pair_frames[p]["Pair"] = p
         return pd.concat(self.pair_frames.values()).sort().iterrows()
 
@@ -167,16 +171,17 @@ class HistoricCSVPriceHandler(PriceHandler):
         of this class and places a single tick onto the queue, as
         well as updating the current bid/ask and inverse bid/ask.
         """
-        try:
-            index, row = next(self.cur_date_pairs)
-        except StopIteration:
-            # End of the current days data
-            if self._update_csv_for_day():
+        while True:
+            try:
                 index, row = next(self.cur_date_pairs)
-            else: # End of the data
-                self.continue_backtest = False
-                return
-        
+                break
+            except StopIteration:
+                # End of the current days data
+                if not self._update_csv_for_day():
+                    # End of the data
+                    self.continue_backtest = False
+                    return
+
         getcontext().rounding = ROUND_HALF_DOWN
         pair = row["Pair"]
         bid = Decimal(str(row["Bid"])).quantize(
