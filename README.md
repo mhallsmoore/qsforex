@@ -101,17 +101,19 @@ python scripts/generate_simulated_pair.py GBPUSD
 
 At this stage the script is hardcoded to create a single month's data for January 2014. That is, you will see individual files, of the format ```BBBQQQ_YYYYMMDD.csv``` (e.g. ```GBPUSD_20140112.csv```) appear in your ```CSV_DATA_DIR``` for all business days in that month. If you wish to change the month/year of the data output, simply modify the file and re-run.
 
-7) Now that the historical data has been generated it is possible to carry out a backtest. The backtest file itself is stored in ```backtest/backtest.py```. It currently defaults to trading GBPUSD (so will expect GBPUSD data files in ```CSV_DATA_DIR```), but this can easily be changed. In addition a basic ```MovingAverageCrossStrategy``` is implemented (from ```strategy/strategy.py```), which will backtest on the data found in ```CSV_DATA_DIR```.
+7) Now that the historical data has been generated it is possible to carry out a backtest. The backtest file itself is stored in ```backtest/backtest.py```, but this only contains the ```Backtest``` class. To actually execute a backtest you need to instantiate this class and provide it with the necessary modules. 
 
-To execute the backtest, simply run the following:
+The best way to see how this is done is to look at the example Moving Average Crossover implementation in the ```examples/mac.py``` file and use this as a template. This makes use of the ```MovingAverageCrossStrategy``` which is found in ```strategy/strategy.py```. This defaults to trading both GBP/USD and EUR/USD to demonstrate multiple currency pair usage. It uses data found in ```CSV_DATA_DIR```.
+
+To execute the example backtest, simply run the following:
 
 ```
-python backtest/backtest.py
+python examples/mac.py
 ```
 
 **This will take some time.** On my Ubuntu desktop system at home, with the historical data generated via ```generate_simulated_pair.py```, it takes around 5-10 mins to run. A large part of this calculation occurs at the end of the actual backtest, when the drawdown is being calculated, so please remember that the code has not hung up! Please leave it until completion.
 
-8) If you wish to view the performance of the backtest you can simply run ```output.py``` to view an equity curve, period returns (i.e. tick-to-tick returns) and a drawdown curve:
+8) If you wish to view the performance of the backtest you can simply use ```output.py``` to view an equity curve, period returns (i.e. tick-to-tick returns) and a drawdown curve:
 
 ```
 python backtest/output.py

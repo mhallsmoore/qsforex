@@ -4,13 +4,13 @@ from qsforex.backtest.backtest import Backtest
 from qsforex.execution.execution import SimulatedExecution
 from qsforex.portfolio.portfolio import Portfolio
 from qsforex import settings
-from qsforex.strategy.strategy import TestStrategy, MovingAverageCrossStrategy
+from qsforex.strategy.strategy import MovingAverageCrossStrategy
 from qsforex.data.price import HistoricCSVPriceHandler
 
 
 if __name__ == "__main__":
-    # Trade on the "Cable" - GBP/USD
-    pairs = ["GBPUSD"]
+    # Trade on GBP/USD and EUR/USD
+    pairs = ["GBPUSD", "EURUSD"]
     
     # Create the strategy parameters for the
     # MovingAverageCrossStrategy
