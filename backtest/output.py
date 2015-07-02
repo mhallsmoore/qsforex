@@ -1,4 +1,4 @@
-import os, os.path
+import os.path
 
 import pandas as pd
 import matplotlib
@@ -13,6 +13,7 @@ from qsforex.settings import OUTPUT_RESULTS_DIR
 
 
 if __name__ == "__main__":
+
     """
     A simple script to plot the balance of the portfolio, or
     "equity curve", as a function of time.
@@ -20,6 +21,7 @@ if __name__ == "__main__":
     It requires OUTPUT_RESULTS_DIR to be set in the project
     settings.
     """
+
     sns.set_palette("deep", desat=.6)
     sns.set_context(rc={"figure.figsize": (8, 4)})
 
@@ -31,7 +33,7 @@ if __name__ == "__main__":
     # Plot three charts: Equity curve, period returns, drawdowns
     fig = plt.figure()
     fig.patch.set_facecolor('white')     # Set the outer colour to white
-    
+
     # Plot the equity curve
     ax1 = fig.add_subplot(311, ylabel='Portfolio value')
     equity["Equity"].plot(ax=ax1, color=sns.color_palette()[0])

@@ -18,11 +18,10 @@ class TickerMock(object):
             "EURUSD": {"bid": Decimal("1.07832"), "ask": Decimal("1.07847")}
         }
 
-
-
 # =====================================
 # GBP Home Currency with GBP/USD traded
 # =====================================
+
 
 class TestLongGBPUSDPosition(unittest.TestCase):
     """
@@ -36,7 +35,7 @@ class TestLongGBPUSDPosition(unittest.TestCase):
         units = Decimal("2000")
         ticker = TickerMock()
         self.position = Position(
-            home_currency, position_type, 
+            home_currency, position_type,
             currency_pair, units, ticker
         )
 
@@ -85,7 +84,7 @@ class TestShortGBPUSDPosition(unittest.TestCase):
         units = Decimal("2000")
         ticker = TickerMock()
         self.position = Position(
-            home_currency, position_type, 
+            home_currency, position_type,
             currency_pair, units, ticker
         )
 
@@ -138,7 +137,7 @@ class TestLongEURUSDPosition(unittest.TestCase):
         units = Decimal("2000")
         ticker = TickerMock()
         self.position = Position(
-            home_currency, position_type, 
+            home_currency, position_type,
             currency_pair, units, ticker
         )
 
@@ -188,7 +187,7 @@ class TestLongEURUSDPosition(unittest.TestCase):
         units = Decimal("2000")
         ticker = TickerMock()
         self.position = Position(
-            home_currency, position_type, 
+            home_currency, position_type,
             currency_pair, units, ticker
         )
 

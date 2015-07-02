@@ -16,7 +16,7 @@ class SignalEvent(Event):
         self.type = 'SIGNAL'
         self.instrument = instrument
         self.order_type = order_type
-        self.side = side        
+        self.side = side
         self.time = time  # Time of the last tick that generated the signal
 
 
@@ -26,4 +26,4 @@ class OrderEvent(Event):
         self.instrument = instrument
         self.units = units
         self.order_type = order_type
-        self.side = side        
+        self.side = side

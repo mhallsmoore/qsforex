@@ -10,19 +10,23 @@ from qsforex import settings
 
 
 class Backtest(object):
+
     """
     Enscapsulates the settings and components for carrying out
     an event-driven backtest on the foreign exchange markets.
     """
+
     def __init__(
-        self, pairs, data_handler, strategy, 
-        strategy_params, portfolio, execution, 
-        equity=100000.0, heartbeat=0.0, 
+        self, pairs, data_handler, strategy,
+        strategy_params, portfolio, execution,
+        equity=100000.0, heartbeat=0.0,
         max_iters=10000000000
     ):
+
         """
         Initialises the backtest.
         """
+
         self.pairs = pairs
         self.events = queue.Queue()
         self.csv_dir = settings.CSV_DATA_DIR
@@ -40,14 +44,16 @@ class Backtest(object):
         self.execution = execution()
 
     def _run_backtest(self):
+
         """
-        Carries out an infinite while loop that polls the 
+        Carries out an infinite while loop that polls the
         events queue and directs each event to either the
         strategy component of the execution handler. The
         loop will then pause for "heartbeat" seconds and
         continue unti the maximum number of iterations is
         exceeded.
         """
+
         print("Running Backtest...")
         iters = 0
         while iters < self.max_iters and self.ticker.continue_backtest:
@@ -68,16 +74,20 @@ class Backtest(object):
             iters += 1
 
     def _output_performance(self):
+
         """
         Outputs the strategy performance from the backtest.
         """
+
         print("Calculating Performance Metrics...")
         self.portfolio.output_results()
 
     def simulate_trading(self):
+
         """
         Simulates the backtest and outputs portfolio performance.
         """
+
         self._run_backtest()
         self._output_performance()
         print("Backtest complete.")
