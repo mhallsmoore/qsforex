@@ -47,7 +47,6 @@ class StreamingForexPrices(PriceHandler):
             headers = {'Authorization': 'Bearer ' + self.access_token}
             params = {'instruments': ','.join(pairs_oanda), 'accountId': self.account_id}
             resp = s.get(url, headers=headers, params=params, stream=True)
-            print(resp.url)
             return resp
         except Exception as e:
             s.close()
