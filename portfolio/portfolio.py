@@ -1,7 +1,7 @@
 from __future__ import print_function
 
 from copy import deepcopy
-from decimal import Decimal, getcontext, ROUND_HALF_DOWN
+from decimal import Decimal
 import os
 
 import pandas as pd
@@ -14,8 +14,8 @@ from qsforex.settings import OUTPUT_RESULTS_DIR
 
 class Portfolio(object):
     def __init__(
-        self, ticker, events, home_currency="GBP", 
-        leverage=20, equity=Decimal("100000.00"), 
+        self, ticker, events, home_currency="GBP",
+        leverage=20, equity=Decimal("100000.00"),
         risk_per_trade=Decimal("0.02"), backtest=True
     ):
         self.ticker = ticker
@@ -38,7 +38,7 @@ class Portfolio(object):
         self, position_type, currency_pair, units, ticker
     ):
         ps = Position(
-            self.home_currency, position_type, 
+            self.home_currency, position_type,
             currency_pair, units, ticker
         )
         self.positions[currency_pair] = ps
@@ -83,12 +83,12 @@ class Portfolio(object):
         return out_file
 
     def output_results(self):
-        # Closes off the Backtest.csv file so it can be 
+        # Closes off the Backtest.csv file so it can be
         # read via Pandas without problems
         self.backtest_file.close()
-        
+
         in_filename = "backtest.csv"
-        out_filename = "equity.csv" 
+        out_filename = "equity.csv"
         in_file = os.path.join(OUTPUT_RESULTS_DIR, in_filename)
         out_file = os.path.join(OUTPUT_RESULTS_DIR, out_filename)
 
@@ -98,12 +98,12 @@ class Portfolio(object):
         df["Total"] = df.sum(axis=1)
         df["Returns"] = df["Total"].pct_change()
         df["Equity"] = (1.0+df["Returns"]).cumprod()
-        
+
         # Create drawdown statistics
         drawdown, max_dd, dd_duration = create_drawdowns(df["Equity"])
         df["Drawdown"] = drawdown
         df.to_csv(out_file, index=True)
-        
+
         print("Simulation complete and results exported to %s" % out_filename)
 
     def update_portfolio(self, tick_event):
@@ -126,12 +126,11 @@ class Portfolio(object):
             print(out_line[:-2])
             self.backtest_file.write(out_line)
 
-    def execute_signal(self, signal_event):       
+    def execute_signal(self, signal_event):
         side = signal_event.side
         currency_pair = signal_event.instrument
         units = int(self.trade_units)
-        time = signal_event.time
-        
+
         # If there is no position, create one
         if currency_pair not in self.positions:
             if side == "buy":
@@ -139,7 +138,7 @@ class Portfolio(object):
             else:
                 position_type = "short"
             self.add_new_position(
-                position_type, currency_pair, 
+                position_type, currency_pair,
                 units, self.ticker
             )
 
@@ -148,7 +147,7 @@ class Portfolio(object):
             ps = self.positions[currency_pair]
 
             if side == "buy" and ps.position_type == "long":
-                add_position_units(currency_pair, units)
+                self.add_position_units(currency_pair, units)
 
             elif side == "sell" and ps.position_type == "long":
                 if units == ps.units:
@@ -167,10 +166,9 @@ class Portfolio(object):
                     return
                 elif units > ps.units:
                     return
-                    
+
             elif side == "sell" and ps.position_type == "short":
-                add_position_units(currency_pair, units)
+                self.add_position_units(currency_pair, units)
 
         order = OrderEvent(currency_pair, units, "market", side)
         self.events.put(order)
-        

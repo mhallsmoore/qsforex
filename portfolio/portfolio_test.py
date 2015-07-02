@@ -1,9 +1,8 @@
-from decimal import Decimal, getcontext, ROUND_HALF_DOWN
+from decimal import Decimal
 import unittest
 
 from qsforex.portfolio.portfolio import Portfolio
 from qsforex.portfolio.position_test import TickerMock
-from qsforex.portfolio.position import Position
 
 
 class TestPortfolio(unittest.TestCase):
@@ -15,8 +14,8 @@ class TestPortfolio(unittest.TestCase):
         ticker = TickerMock()
         events = {}
         self.port = Portfolio(
-            ticker, events, home_currency=home_currency, 
-            leverage=leverage, equity=equity, 
+            ticker, events, home_currency=home_currency,
+            leverage=leverage, equity=equity,
             risk_per_trade=risk_per_trade
         )
 
@@ -26,8 +25,8 @@ class TestPortfolio(unittest.TestCase):
         units = Decimal("2000")
         ticker = TickerMock()
         self.port.add_new_position(
-            position_type, 
-            currency_pair, 
+            position_type,
+            currency_pair,
             units, ticker
         )
         ps = self.port.positions[currency_pair]
@@ -44,8 +43,8 @@ class TestPortfolio(unittest.TestCase):
         units = Decimal("2000")
         ticker = TickerMock()
         self.port.add_new_position(
-            position_type, 
-            currency_pair, 
+            position_type,
+            currency_pair,
             units, ticker
         )
         ps = self.port.positions[currency_pair]
@@ -71,7 +70,7 @@ class TestPortfolio(unittest.TestCase):
 
         # Add a position and test for real position
         self.port.add_new_position(
-            position_type, 
+            position_type,
             currency_pair,
             units, ticker
         )
@@ -103,7 +102,7 @@ class TestPortfolio(unittest.TestCase):
 
         # Add a position and test for real position
         self.port.add_new_position(
-            position_type, 
+            position_type,
             currency_pair,
             units, ticker
         )
@@ -135,7 +134,7 @@ class TestPortfolio(unittest.TestCase):
 
         # Add a position and then add units to it
         self.port.add_new_position(
-            position_type, 
+            position_type,
             currency_pair,
             units, ticker
         )
@@ -145,7 +144,7 @@ class TestPortfolio(unittest.TestCase):
         ticker.prices["GBPUSD"]["ask"] = Decimal("1.51928")
         ticker.prices["USDGBP"]["bid"] = Decimal("0.65842")
         ticker.prices["USDGBP"]["ask"] = Decimal("0.65821")
-        
+
         add_units = Decimal("8000")
         apu = self.port.add_position_units(
             currency_pair, add_units
@@ -166,7 +165,7 @@ class TestPortfolio(unittest.TestCase):
         self.assertTrue(rpu)
         self.assertEqual(ps.units, Decimal("7000"))
         self.assertEqual(self.port.balance, Decimal("100007.99"))
-    
+
     def test_remove_position_units_short(self):
         position_type = "short"
         currency_pair = "GBPUSD"
@@ -182,7 +181,7 @@ class TestPortfolio(unittest.TestCase):
 
         # Add a position and then add units to it
         self.port.add_new_position(
-            position_type, 
+            position_type,
             currency_pair,
             units, ticker
         )
@@ -192,7 +191,7 @@ class TestPortfolio(unittest.TestCase):
         ticker.prices["GBPUSD"]["ask"] = Decimal("1.51928")
         ticker.prices["USDGBP"]["bid"] = Decimal("0.65842")
         ticker.prices["USDGBP"]["ask"] = Decimal("0.65821")
-        
+
         add_units = Decimal("8000")
         apu = self.port.add_position_units(
             currency_pair, add_units
@@ -229,7 +228,7 @@ class TestPortfolio(unittest.TestCase):
 
         # Add a position and then add units to it
         self.port.add_new_position(
-            position_type, 
+            position_type,
             currency_pair,
             units, ticker
         )
@@ -239,7 +238,7 @@ class TestPortfolio(unittest.TestCase):
         ticker.prices["GBPUSD"]["ask"] = Decimal("1.51928")
         ticker.prices["USDGBP"]["bid"] = Decimal("0.65842")
         ticker.prices["USDGBP"]["ask"] = Decimal("0.65821")
-        
+
         add_units = Decimal("8000")
         apu = self.port.add_position_units(
             currency_pair, add_units
@@ -282,7 +281,7 @@ class TestPortfolio(unittest.TestCase):
 
         # Add a position and then add units to it
         self.port.add_new_position(
-            position_type, 
+            position_type,
             currency_pair,
             units, ticker
         )
@@ -292,7 +291,7 @@ class TestPortfolio(unittest.TestCase):
         ticker.prices["GBPUSD"]["ask"] = Decimal("1.51928")
         ticker.prices["USDGBP"]["bid"] = Decimal("0.65842")
         ticker.prices["USDGBP"]["ask"] = Decimal("0.65821")
-        
+
         add_units = Decimal("8000")
         apu = self.port.add_position_units(
             currency_pair, add_units

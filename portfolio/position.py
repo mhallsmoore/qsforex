@@ -3,7 +3,7 @@ from decimal import Decimal, getcontext, ROUND_HALF_DOWN
 
 class Position(object):
     def __init__(
-        self, home_currency, position_type, 
+        self, home_currency, position_type,
         currency_pair, units, ticker
     ):
         self.home_currency = home_currency  # Account denomination (e.g. GBP)
@@ -50,7 +50,7 @@ class Position(object):
         profit = pips * qh_close * self.units
         return profit.quantize(
             Decimal("0.00001"), ROUND_HALF_DOWN
-        )   
+        )
 
     def calculate_profit_perc(self):
         return (self.profit_base / self.units * Decimal("100.00")).quantize(
@@ -80,13 +80,10 @@ class Position(object):
 
     def remove_units(self, units):
         dec_units = Decimal(str(units))
-        ticker_cp = self.ticker.prices[self.currency_pair]
         ticker_qh = self.ticker.prices[self.quote_home_currency_pair]
         if self.position_type == "long":
-            remove_price = ticker_cp["ask"]
             qh_close = ticker_qh["bid"]
         else:
-            remove_price = ticker_cp["bid"]
             qh_close = ticker_qh["ask"]
         self.units -= dec_units
         self.update_position_price()
@@ -96,13 +93,10 @@ class Position(object):
         return pnl.quantize(Decimal("0.01"))
 
     def close_position(self):
-        ticker_cp = self.ticker.prices[self.currency_pair]
         ticker_qh = self.ticker.prices[self.quote_home_currency_pair]
         if self.position_type == "long":
-            remove_price = ticker_cp["ask"]
             qh_close = ticker_qh["bid"]
         else:
-            remove_price = ticker_cp["bid"]
             qh_close = ticker_qh["ask"]
         self.update_position_price()
         # Calculate PnL

@@ -1,13 +1,10 @@
 from __future__ import print_function
 
-import datetime
 from decimal import Decimal, getcontext, ROUND_HALF_DOWN
 import os
 import os.path
 import re
-import time
 
-import numpy as np
 import pandas as pd
 
 from qsforex import settings
@@ -25,7 +22,7 @@ class PriceHandler(object):
 
     This will replicate how a live strategy would function as current
     tick data would be streamed via a brokerage. Thus a historic and live
-    system will be treated identically by the rest of the QSForex 
+    system will be treated identically by the rest of the QSForex
     backtesting suite.
     """
 
@@ -42,14 +39,14 @@ class PriceHandler(object):
         be more robust and straightforward to follow.
         """
         prices_dict = dict(
-            (k, v) for k,v in [
+            (k, v) for k, v in [
                 (p, {"bid": None, "ask": None, "time": None}) for p in self.pairs
             ]
         )
         inv_prices_dict = dict(
-            (k, v) for k,v in [
+            (k, v) for k, v in [
                 (
-                    "%s%s" % (p[3:], p[:3]), 
+                    "%s%s" % (p[3:], p[:3]),
                     {"bid": None, "ask": None, "time": None}
                 ) for p in self.pairs
             ]
@@ -118,7 +115,7 @@ class HistoricCSVPriceHandler(PriceHandler):
         """
         Removes the pair, underscore and '.csv' from the
         dates and eliminates duplicates. Returns a list
-        of date strings of the form "YYYYMMDD". 
+        of date strings of the form "YYYYMMDD".
         """
         csv_files = self._list_all_csv_files()
         de_dup_csv = list(set([d[7:-4] for d in csv_files]))
@@ -129,16 +126,16 @@ class HistoricCSVPriceHandler(PriceHandler):
         """
         Opens the CSV files from the data directory, converting
         them into pandas DataFrames within a pairs dictionary.
-        
+
         The function then concatenates all of the separate pairs
-        for a single day into a single data frame that is time 
-        ordered, allowing tick data events to be added to the queue 
+        for a single day into a single data frame that is time
+        ordered, allowing tick data events to be added to the queue
         in a chronological fashion.
         """
         for p in self.pairs:
             pair_path = os.path.join(self.csv_dir, '%s_%s.csv' % (p, date_str))
             self.pair_frames[p] = pd.io.parsers.read_csv(
-                pair_path, header=True, index_col=0, 
+                pair_path, header=True, index_col=0,
                 parse_dates=True, dayfirst=True,
                 names=("Time", "Ask", "Bid", "AskVolume", "BidVolume")
             )
@@ -173,10 +170,10 @@ class HistoricCSVPriceHandler(PriceHandler):
             # End of the current days data
             if self._update_csv_for_day():
                 index, row = next(self.cur_date_pairs)
-            else: # End of the data
+            else:  # End of the data
                 self.continue_backtest = False
                 return
-        
+
         getcontext().rounding = ROUND_HALF_DOWN
         pair = row["Pair"]
         bid = Decimal(str(row["Bid"])).quantize(

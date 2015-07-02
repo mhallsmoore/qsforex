@@ -15,9 +15,9 @@ class Backtest(object):
     an event-driven backtest on the foreign exchange markets.
     """
     def __init__(
-        self, pairs, data_handler, strategy, 
-        strategy_params, portfolio, execution, 
-        equity=100000.0, heartbeat=0.0, 
+        self, pairs, data_handler, strategy,
+        strategy_params, portfolio, execution,
+        equity=100000.0, heartbeat=0.0,
         max_iters=10000000000
     ):
         """
@@ -41,7 +41,7 @@ class Backtest(object):
 
     def _run_backtest(self):
         """
-        Carries out an infinite while loop that polls the 
+        Carries out an infinite while loop that polls the
         events queue and directs each event to either the
         strategy component of the execution handler. The
         loop will then pause for "heartbeat" seconds and

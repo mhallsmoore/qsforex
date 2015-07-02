@@ -8,7 +8,7 @@ class TestStrategy(object):
     A testing strategy that alternates between buying and selling
     a currency pair on every 5th tick. This has the effect of
     continuously "crossing the spread" and so will be loss-making
-    strategy. 
+    strategy.
 
     It is used to test that the backtester/live trading system is
     behaving as expected.
@@ -21,7 +21,7 @@ class TestStrategy(object):
 
     def calculate_signals(self, event):
         if event.type == 'TICK':
-            if self.ticks % 5 == 0:
+            if (self.ticks % 5 == 0) and (self.ticks != 0):
                 if self.invested == False:
                     signal = SignalEvent(self.pairs[0], "market", "buy", event.time)
                     self.events.put(signal)
@@ -50,12 +50,12 @@ class MovingAverageCrossStrategy(object):
     full moving average calculations on each tick.
     """
     def __init__(
-        self, pairs, events, 
+        self, pairs, events,
         short_window=500, long_window=2000
     ):
         self.pairs = pairs
         self.pairs_dict = self.create_pairs_dict()
-        self.events = events      
+        self.events = events
         self.short_window = short_window
         self.long_window = long_window
 

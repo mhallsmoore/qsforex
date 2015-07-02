@@ -1,5 +1,4 @@
-import copy
-from decimal import Decimal, getcontext
+from decimal import getcontext
 try:
     import Queue as queue
 except ImportError:
@@ -16,7 +15,7 @@ from qsforex.data.streaming import StreamingForexPrices
 
 def trade(events, strategy, portfolio, execution, heartbeat):
     """
-    Carries out an infinite while loop that polls the 
+    Carries out an infinite while loop that polls the
     events queue and directs each event to either the
     strategy component of the execution handler. The
     loop will then pause for "heartbeat" seconds and
@@ -48,16 +47,16 @@ if __name__ == "__main__":
     equity = settings.EQUITY
 
     # Trade "Cable"
-    pairs = ["GBPUSD"]
+    pairs = ["EURUSD", "GBPUSD"]
 
     # Create the OANDA market price streaming class
     # making sure to provide authentication commands
     prices = StreamingForexPrices(
-        settings.STREAM_DOMAIN, settings.ACCESS_TOKEN, 
+        settings.STREAM_DOMAIN, settings.ACCESS_TOKEN,
         settings.ACCOUNT_ID, pairs, events
     )
 
-    # Create the strategy/signal generator, passing the 
+    # Create the strategy/signal generator, passing the
     # instrument and the events queue
     strategy = TestStrategy(pairs, events)
 
@@ -71,11 +70,11 @@ if __name__ == "__main__":
     # Create the execution handler making sure to
     # provide authentication commands
     execution = OANDAExecutionHandler(
-        settings.API_DOMAIN, 
-        settings.ACCESS_TOKEN, 
+        settings.API_DOMAIN,
+        settings.ACCESS_TOKEN,
         settings.ACCOUNT_ID
     )
-    
+
     # Create two separate threads: One for the trading loop
     # and another for the market price streaming class
     trade_thread = threading.Thread(
@@ -84,7 +83,7 @@ if __name__ == "__main__":
         )
     )
     price_thread = threading.Thread(target=prices.stream_to_queue, args=[])
-    
+
     # Start both threads
     trade_thread.start()
     price_thread.start()

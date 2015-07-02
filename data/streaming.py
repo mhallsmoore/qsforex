@@ -10,7 +10,7 @@ from qsforex.data.price import PriceHandler
 
 class StreamingForexPrices(PriceHandler):
     def __init__(
-        self, domain, access_token, 
+        self, domain, access_token,
         account_id, pairs, events_queue
     ):
         self.domain = domain
@@ -38,15 +38,15 @@ class StreamingForexPrices(PriceHandler):
 
     def connect_to_stream(self):
         pairs_oanda = ["%s_%s" % (p[:3], p[3:]) for p in self.pairs]
+        print(pairs_oanda)
         try:
             requests.packages.urllib3.disable_warnings()
             s = requests.Session()
             url = "https://" + self.domain + "/v1/prices"
-            headers = {'Authorization' : 'Bearer ' + self.access_token}
-            params = {'instruments' : pairs_oanda, 'accountId' : self.account_id}
-            req = requests.Request('GET', url, headers=headers, params=params)
-            pre = req.prepare()
-            resp = s.send(pre, stream=True, verify=False)
+            headers = {'Authorization': 'Bearer ' + self.access_token}
+            params = {'instruments': ','.join(pairs_oanda), 'accountId': self.account_id}
+            resp = s.get(url, headers=headers, params=params, stream=True)
+            print(resp.url)
             return resp
         except Exception as e:
             s.close()
@@ -66,7 +66,7 @@ class StreamingForexPrices(PriceHandler):
                     return
                 if "instrument" in msg or "tick" in msg:
                     print(msg)
-                    getcontext().rounding = ROUND_HALF_DOWN 
+                    getcontext().rounding = ROUND_HALF_DOWN
                     instrument = msg["tick"]["instrument"].replace("_", "")
                     time = msg["tick"]["time"]
                     bid = Decimal(str(msg["tick"]["bid"])).quantize(
