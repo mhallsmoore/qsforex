@@ -23,7 +23,7 @@ class TestStrategy(object):
 
     def calculate_signals(self, event):
         if event.type == 'TICK':
-            if (self.ticks % 5 == 0) and (self.ticks != 0):
+            if self.ticks % 5 == 0:
                 if self.invested == False:
                     signal = SignalEvent(self.pairs[0], "market", "buy", event.time)
                     self.events.put(signal)
