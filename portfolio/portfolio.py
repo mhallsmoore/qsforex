@@ -107,10 +107,12 @@ class Portfolio(object):
         print("Simulation complete and results exported to %s" % out_filename)
 
     def update_portfolio(self, tick_event):
+
         """
         This updates all positions ensuring an up to date
         unrealised profit and loss (PnL).
         """
+
         currency_pair = tick_event.instrument
         if currency_pair in self.positions:
             ps = self.positions[currency_pair]

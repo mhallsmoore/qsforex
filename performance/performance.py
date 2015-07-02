@@ -2,6 +2,7 @@ import pandas as pd
 
 
 def create_drawdowns(pnl):
+
     """
     Calculate the largest peak-to-trough drawdown of the PnL curve
     as well as the duration of the drawdown. Requires that the

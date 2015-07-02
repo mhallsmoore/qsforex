@@ -21,11 +21,13 @@ class StreamingForexPrices(PriceHandler):
         self.prices = self._set_up_prices_dict()
 
     def invert_prices(self, pair, bid, ask):
+
         """
         Simply inverts the prices for a particular currency pair.
         This will turn the bid/ask of "GBPUSD" into bid/ask for
         "USDGBP" and place them in the prices dictionary.
         """
+
         getcontext().rounding = ROUND_HALF_DOWN
         inv_pair = "%s%s" % (pair[3:], pair[:3])
         inv_bid = (Decimal("1.0")/bid).quantize(
@@ -38,7 +40,6 @@ class StreamingForexPrices(PriceHandler):
 
     def connect_to_stream(self):
         pairs_oanda = ["%s_%s" % (p[:3], p[3:]) for p in self.pairs]
-        print(pairs_oanda)
         try:
             requests.packages.urllib3.disable_warnings()
             s = requests.Session()

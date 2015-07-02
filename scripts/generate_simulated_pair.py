@@ -12,10 +12,12 @@ from qsforex import settings
 
 
 def month_weekdays(year_int, month_int):
+
     """
     Produces a list of datetime.date objects representing the
     weekdays in a particular month, given a year.
     """
+
     cal = calendar.Calendar()
     return [
         d for d in cal.itermonthdates(year_int, month_int)

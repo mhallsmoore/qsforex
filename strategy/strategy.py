@@ -4,6 +4,7 @@ from qsforex.event.event import SignalEvent
 
 
 class TestStrategy(object):
+
     """
     A testing strategy that alternates between buying and selling
     a currency pair on every 5th tick. This has the effect of
@@ -13,6 +14,7 @@ class TestStrategy(object):
     It is used to test that the backtester/live trading system is
     behaving as expected.
     """
+
     def __init__(self, pairs, events):
         self.pairs = pairs
         self.events = events
@@ -34,6 +36,7 @@ class TestStrategy(object):
 
 
 class MovingAverageCrossStrategy(object):
+
     """
     A basic Moving Average Crossover strategy that generates
     two simple moving averages (SMA), with default windows
@@ -49,6 +52,7 @@ class MovingAverageCrossStrategy(object):
     increase efficiency by eliminating the need to call two
     full moving average calculations on each tick.
     """
+
     def __init__(
         self, pairs, events,
         short_window=500, long_window=2000

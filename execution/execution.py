@@ -14,6 +14,7 @@ urllib3.disable_warnings()
 
 
 class ExecutionHandler(object):
+
     """
     Provides an abstract base class to handle all execution in the
     backtesting and live trading system.
@@ -30,6 +31,7 @@ class ExecutionHandler(object):
 
 
 class SimulatedExecution(object):
+
     """
     Provides a simulated execution handling environment. This class
     actually does nothing - it simply receives an order to execute.
@@ -37,6 +39,7 @@ class SimulatedExecution(object):
     Instead, the Portfolio object actually provides fill handling.
     This will be modified in later versions.
     """
+
     def execute_order(self, event):
         pass
 

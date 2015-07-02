@@ -12,6 +12,7 @@ from qsforex.event.event import TickEvent
 
 
 class PriceHandler(object):
+
     """
     PriceHandler is an abstract base class providing an interface for
     all subsequent (inherited) data handlers (both live and historic).
@@ -27,6 +28,7 @@ class PriceHandler(object):
     """
 
     def _set_up_prices_dict(self):
+
         """
         Due to the way that the Position object handles P&L
         calculation, it is necessary to include values for not
@@ -38,6 +40,7 @@ class PriceHandler(object):
         but a future TODO is to modify the following code to
         be more robust and straightforward to follow.
         """
+
         prices_dict = dict(
             (k, v) for k, v in [
                 (p, {"bid": None, "ask": None, "time": None}) for p in self.pairs
@@ -55,11 +58,13 @@ class PriceHandler(object):
         return prices_dict
 
     def invert_prices(self, pair, bid, ask):
+
         """
         Simply inverts the prices for a particular currency pair.
         This will turn the bid/ask of "GBPUSD" into bid/ask for
         "USDGBP" and place them in the prices dictionary.
         """
+
         getcontext().rounding = ROUND_HALF_DOWN
         inv_pair = "%s%s" % (pair[3:], pair[:3])
         inv_bid = (Decimal("1.0")/bid).quantize(
@@ -72,6 +77,7 @@ class PriceHandler(object):
 
 
 class HistoricCSVPriceHandler(PriceHandler):
+
     """
     HistoricCSVPriceHandler is designed to read CSV files of
     tick data for each requested currency pair and stream those
@@ -112,17 +118,20 @@ class HistoricCSVPriceHandler(PriceHandler):
         return matching_files
 
     def _list_all_file_dates(self):
+
         """
         Removes the pair, underscore and '.csv' from the
         dates and eliminates duplicates. Returns a list
         of date strings of the form "YYYYMMDD".
         """
+
         csv_files = self._list_all_csv_files()
         de_dup_csv = list(set([d[7:-4] for d in csv_files]))
         de_dup_csv.sort()
         return de_dup_csv
 
     def _open_convert_csv_files_for_day(self, date_str):
+
         """
         Opens the CSV files from the data directory, converting
         them into pandas DataFrames within a pairs dictionary.
@@ -132,6 +141,7 @@ class HistoricCSVPriceHandler(PriceHandler):
         ordered, allowing tick data events to be added to the queue
         in a chronological fashion.
         """
+
         for p in self.pairs:
             pair_path = os.path.join(self.csv_dir, '%s_%s.csv' % (p, date_str))
             self.pair_frames[p] = pd.io.parsers.read_csv(
@@ -153,6 +163,7 @@ class HistoricCSVPriceHandler(PriceHandler):
             return True
 
     def stream_next_tick(self):
+
         """
         The Backtester has now moved over to a single-threaded
         model in order to fully reproduce results on each run.
@@ -164,6 +175,7 @@ class HistoricCSVPriceHandler(PriceHandler):
         of this class and places a single tick onto the queue, as
         well as updating the current bid/ask and inverse bid/ask.
         """
+
         try:
             index, row = next(self.cur_date_pairs)
         except StopIteration:

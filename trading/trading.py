@@ -14,6 +14,7 @@ from qsforex.data.streaming import StreamingForexPrices
 
 
 def trade(events, strategy, portfolio, execution, heartbeat):
+
     """
     Carries out an infinite while loop that polls the
     events queue and directs each event to either the
@@ -21,6 +22,7 @@ def trade(events, strategy, portfolio, execution, heartbeat):
     loop will then pause for "heartbeat" seconds and
     continue.
     """
+
     while True:
         try:
             event = events.get(False)
@@ -47,7 +49,7 @@ if __name__ == "__main__":
     equity = settings.EQUITY
 
     # Trade "Cable"
-    pairs = ["EURUSD", "GBPUSD"]
+    pairs = ["GBPUSD"]
 
     # Create the OANDA market price streaming class
     # making sure to provide authentication commands

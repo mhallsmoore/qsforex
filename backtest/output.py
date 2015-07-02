@@ -13,6 +13,7 @@ from qsforex.settings import OUTPUT_RESULTS_DIR
 
 
 if __name__ == "__main__":
+
     """
     A simple script to plot the balance of the portfolio, or
     "equity curve", as a function of time.
@@ -20,6 +21,7 @@ if __name__ == "__main__":
     It requires OUTPUT_RESULTS_DIR to be set in the project
     settings.
     """
+
     sns.set_palette("deep", desat=.6)
     sns.set_context(rc={"figure.figsize": (8, 4)})
 
