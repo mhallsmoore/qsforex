@@ -14,9 +14,9 @@ from qsforex.settings import OUTPUT_RESULTS_DIR
 
 class Portfolio(object):
     def __init__(
-        self, ticker, events, home_currency="GBP", leverage=20, 
-        equity=Decimal("100000.00"), risk_per_trade=Decimal("0.02"),
-        backtest=True
+        self, ticker, events, home_currency="GBP", 
+        leverage=20, equity=Decimal("100000.00"), 
+        risk_per_trade=Decimal("0.02"), backtest=True
     ):
         self.ticker = ticker
         self.events = events
@@ -28,7 +28,8 @@ class Portfolio(object):
         self.backtest = backtest
         self.trade_units = self.calc_risk_position_size()
         self.positions = {}
-        self.backtest_file = self.create_equity_file()
+        if self.backtest:
+            self.backtest_file = self.create_equity_file()
 
     def calc_risk_position_size(self):
         return self.equity * self.risk_per_trade
@@ -114,16 +115,16 @@ class Portfolio(object):
         if currency_pair in self.positions:
             ps = self.positions[currency_pair]
             ps.update_position_price()
-        out_line = "%s,%s" % (tick_event.time, self.balance)
-        for pair in self.ticker.pairs:
-            if pair in self.positions:
-                out_line += ",%s" % self.positions[currency_pair].profit_base
-            else:
-                out_line += ",0.00"
-        out_line += "\n"
         if self.backtest:
+            out_line = "%s,%s" % (tick_event.time, self.balance)
+            for pair in self.ticker.pairs:
+                if pair in self.positions:
+                    out_line += ",%s" % self.positions[pair].profit_base
+                else:
+                    out_line += ",0.00"
+            out_line += "\n"
             print(out_line[:-2])
-        self.backtest_file.write(out_line)
+            self.backtest_file.write(out_line)
 
     def execute_signal(self, signal_event):       
         side = signal_event.side

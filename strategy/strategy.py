@@ -1,3 +1,5 @@
+import copy
+
 from qsforex.event.event import SignalEvent
 
 
@@ -52,39 +54,49 @@ class MovingAverageCrossStrategy(object):
         short_window=500, long_window=2000
     ):
         self.pairs = pairs
-        self.events = events
-        self.ticks = 0
-        self.invested = False
-        
+        self.pairs_dict = self.create_pairs_dict()
+        self.events = events      
         self.short_window = short_window
         self.long_window = long_window
-        self.short_sma = None
-        self.long_sma = None
+
+    def create_pairs_dict(self):
+        attr_dict = {
+            "ticks": 0,
+            "invested": False,
+            "short_sma": None,
+            "long_sma": None
+        }
+        pairs_dict = {}
+        for p in self.pairs:
+            pairs_dict[p] = copy.deepcopy(attr_dict)
+        return pairs_dict
 
     def calc_rolling_sma(self, sma_m_1, window, price):
         return ((sma_m_1 * (window - 1)) + price) / window
 
     def calculate_signals(self, event):
         if event.type == 'TICK':
+            pair = event.instrument
             price = event.bid
-            if self.ticks == 0:
-                self.short_sma = price
-                self.long_sma = price
+            pd = self.pairs_dict[pair]
+            if pd["ticks"] == 0:
+                pd["short_sma"] = price
+                pd["long_sma"] = price
             else:
-                self.short_sma = self.calc_rolling_sma(
-                    self.short_sma, self.short_window, price
+                pd["short_sma"] = self.calc_rolling_sma(
+                    pd["short_sma"], self.short_window, price
                 )
-                self.long_sma = self.calc_rolling_sma(
-                    self.long_sma, self.long_window, price
+                pd["long_sma"] = self.calc_rolling_sma(
+                    pd["long_sma"], self.long_window, price
                 )
             # Only start the strategy when we have created an accurate short window
-            if self.ticks > self.short_window:
-                if self.short_sma > self.long_sma and not self.invested:
-                    signal = SignalEvent(self.pairs[0], "market", "buy", event.time)
+            if pd["ticks"] > self.short_window:
+                if pd["short_sma"] > pd["long_sma"] and not pd["invested"]:
+                    signal = SignalEvent(pair, "market", "buy", event.time)
                     self.events.put(signal)
-                    self.invested = True
-                if self.short_sma < self.long_sma and self.invested:
-                    signal = SignalEvent(self.pairs[0], "market", "sell", event.time)
+                    pd["invested"] = True
+                if pd["short_sma"] < pd["long_sma"] and pd["invested"]:
+                    signal = SignalEvent(pair, "market", "sell", event.time)
                     self.events.put(signal)
-                    self.invested = False
-            self.ticks += 1
+                    pd["invested"] = False
+            pd["ticks"] += 1

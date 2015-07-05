@@ -26,7 +26,7 @@ def create_drawdowns(pnl):
 
     # Loop over the index range
     for t in range(1, len(idx)):
-        hwm.append(max(hwm[t-1], pnl[t]))
-        drawdown[t]= (hwm[t]-pnl[t])
-        duration[t]= (0 if drawdown[t] == 0 else duration[t-1]+1)
+        hwm.append(max(hwm[t-1], pnl.ix[t]))
+        drawdown.ix[t]= (hwm[t]-pnl.ix[t])
+        duration.ix[t]= (0 if drawdown.ix[t] == 0 else duration.ix[t-1]+1)
     return drawdown, drawdown.max(), duration.max()
