@@ -1,5 +1,7 @@
 import copy
 from decimal import Decimal, getcontext
+import logging
+import logging.config
 try:
     import Queue as queue
 except ImportError:
@@ -30,16 +32,23 @@ def trade(events, strategy, portfolio, execution, heartbeat):
         else:
             if event is not None:
                 if event.type == 'TICK':
+                    logger.info("Received new tick event: %s", event)
                     strategy.calculate_signals(event)
                     portfolio.update_portfolio(event)
                 elif event.type == 'SIGNAL':
+                    logger.info("Received new signal event: %s", event)
                     portfolio.execute_signal(event)
                 elif event.type == 'ORDER':
+                    logger.info("Received new order event: %s", event)
                     execution.execute_order(event)
         time.sleep(heartbeat)
 
 
 if __name__ == "__main__":
+    # Set up logging
+    logging.config.fileConfig('../logging.conf')
+    logger = logging.getLogger('qsforex.trading.trading')
+
     # Set the number of decimal places to 2
     getcontext().prec = 2
 
@@ -86,5 +95,7 @@ if __name__ == "__main__":
     price_thread = threading.Thread(target=prices.stream_to_queue, args=[])
     
     # Start both threads
+    logger.info("Starting trading thread")
     trade_thread.start()
+    logger.info("Starting price streaming thread")
     price_thread.start()

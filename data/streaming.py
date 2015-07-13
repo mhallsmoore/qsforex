@@ -1,8 +1,10 @@
 from __future__ import print_function
 
 from decimal import Decimal, getcontext, ROUND_HALF_DOWN
-import requests
+import logging
 import json
+
+import requests
 
 from qsforex.event.event import TickEvent
 from qsforex.data.price import PriceHandler
@@ -19,6 +21,7 @@ class StreamingForexPrices(PriceHandler):
         self.events_queue = events_queue
         self.pairs = pairs
         self.prices = self._set_up_prices_dict()
+        self.logger = logging.getLogger(__name__)
 
     def invert_prices(self, pair, bid, ask):
         """
@@ -63,10 +66,12 @@ class StreamingForexPrices(PriceHandler):
                     dline = line.decode('utf-8')
                     msg = json.loads(dline)
                 except Exception as e:
-                    print("Caught exception when converting message into json\n" + str(e))
+                    self.logger.error(
+                        "Caught exception when converting message into json: %s" % str(e)
+                    )
                     return
                 if "instrument" in msg or "tick" in msg:
-                    print(msg)
+                    self.logger.debug(msg)
                     getcontext().rounding = ROUND_HALF_DOWN 
                     instrument = msg["tick"]["instrument"].replace("_", "")
                     time = msg["tick"]["time"]

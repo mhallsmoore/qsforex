@@ -2,6 +2,7 @@ from __future__ import print_function
 
 from copy import deepcopy
 from decimal import Decimal, getcontext, ROUND_HALF_DOWN
+import logging
 import os
 
 import pandas as pd
@@ -30,6 +31,7 @@ class Portfolio(object):
         self.positions = {}
         if self.backtest:
             self.backtest_file = self.create_equity_file()
+        self.logger = logging.getLogger(__name__)
 
     def calc_risk_position_size(self):
         return self.equity * self.risk_per_trade
@@ -184,7 +186,8 @@ class Portfolio(object):
 
             order = OrderEvent(currency_pair, units, "market", side)
             self.events.put(order)
-            print("Balance: ", self.balance)
+
+            self.logger.info("Portfolio Balance: %s" % self.balance)
         else:
-            print("Unable to execute order as price data was insufficient.")
+            self.logger.info("Unable to execute order as price data was insufficient.")
         
