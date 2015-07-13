@@ -47,8 +47,8 @@ if __name__ == "__main__":
     events = queue.Queue()
     equity = settings.EQUITY
 
-    # Trade "Cable"
-    pairs = ["GBPUSD"]
+    # Pairs to include in streaming data set
+    pairs = ["EURUSD", "GBPUSD"]
 
     # Create the OANDA market price streaming class
     # making sure to provide authentication commands

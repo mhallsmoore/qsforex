@@ -38,12 +38,13 @@ class StreamingForexPrices(PriceHandler):
 
     def connect_to_stream(self):
         pairs_oanda = ["%s_%s" % (p[:3], p[3:]) for p in self.pairs]
+        pair_list = ",".join(pairs_oanda)
         try:
             requests.packages.urllib3.disable_warnings()
             s = requests.Session()
             url = "https://" + self.domain + "/v1/prices"
             headers = {'Authorization' : 'Bearer ' + self.access_token}
-            params = {'instruments' : pairs_oanda, 'accountId' : self.account_id}
+            params = {'instruments' : pair_list, 'accountId' : self.account_id}
             req = requests.Request('GET', url, headers=headers, params=params)
             pre = req.prepare()
             resp = s.send(pre, stream=True, verify=False)
