@@ -2,6 +2,7 @@ from __future__ import print_function
 
 from copy import deepcopy
 from decimal import Decimal, getcontext, ROUND_HALF_DOWN
+import logging
 import os
 
 import pandas as pd
@@ -30,6 +31,7 @@ class Portfolio(object):
         self.positions = {}
         if self.backtest:
             self.backtest_file = self.create_equity_file()
+        self.logger = logging.getLogger(__name__)
 
     def calc_risk_position_size(self):
         return self.equity * self.risk_per_trade
@@ -126,51 +128,66 @@ class Portfolio(object):
             print(out_line[:-2])
             self.backtest_file.write(out_line)
 
-    def execute_signal(self, signal_event):       
-        side = signal_event.side
-        currency_pair = signal_event.instrument
-        units = int(self.trade_units)
-        time = signal_event.time
-        
-        # If there is no position, create one
-        if currency_pair not in self.positions:
-            if side == "buy":
-                position_type = "long"
+    def execute_signal(self, signal_event):
+        # Check that the prices ticker contains all necessary
+        # currency pairs prior to executing an order
+        execute = True
+        tp = self.ticker.prices
+        for pair in tp:
+            if tp[pair]["ask"] is None or tp[pair]["bid"] is None:
+                execute = False
+
+        # All necessary pricing data is available,
+        # we can execute
+        if execute:
+            side = signal_event.side
+            currency_pair = signal_event.instrument
+            units = int(self.trade_units)
+            time = signal_event.time
+            
+            # If there is no position, create one
+            if currency_pair not in self.positions:
+                if side == "buy":
+                    position_type = "long"
+                else:
+                    position_type = "short"
+                self.add_new_position(
+                    position_type, currency_pair, 
+                    units, self.ticker
+                )
+
+            # If a position exists add or remove units
             else:
-                position_type = "short"
-            self.add_new_position(
-                position_type, currency_pair, 
-                units, self.ticker
-            )
+                ps = self.positions[currency_pair]
 
-        # If a position exists add or remove units
+                if side == "buy" and ps.position_type == "long":
+                    add_position_units(currency_pair, units)
+
+                elif side == "sell" and ps.position_type == "long":
+                    if units == ps.units:
+                        self.close_position(currency_pair)
+                    # TODO: Allow units to be added/removed
+                    elif units < ps.units:
+                        return
+                    elif units > ps.units:
+                        return
+
+                elif side == "buy" and ps.position_type == "short":
+                    if units == ps.units:
+                        self.close_position(currency_pair)
+                    # TODO: Allow units to be added/removed
+                    elif units < ps.units:
+                        return
+                    elif units > ps.units:
+                        return
+                        
+                elif side == "sell" and ps.position_type == "short":
+                    add_position_units(currency_pair, units)
+
+            order = OrderEvent(currency_pair, units, "market", side)
+            self.events.put(order)
+
+            self.logger.info("Portfolio Balance: %s" % self.balance)
         else:
-            ps = self.positions[currency_pair]
-
-            if side == "buy" and ps.position_type == "long":
-                add_position_units(currency_pair, units)
-
-            elif side == "sell" and ps.position_type == "long":
-                if units == ps.units:
-                    self.close_position(currency_pair)
-                # TODO: Allow units to be added/removed
-                elif units < ps.units:
-                    return
-                elif units > ps.units:
-                    return
-
-            elif side == "buy" and ps.position_type == "short":
-                if units == ps.units:
-                    self.close_position(currency_pair)
-                # TODO: Allow units to be added/removed
-                elif units < ps.units:
-                    return
-                elif units > ps.units:
-                    return
-                    
-            elif side == "sell" and ps.position_type == "short":
-                add_position_units(currency_pair, units)
-
-        order = OrderEvent(currency_pair, units, "market", side)
-        self.events.put(order)
+            self.logger.info("Unable to execute order as price data was insufficient.")
         

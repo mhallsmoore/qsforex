@@ -212,7 +212,7 @@ class TestPortfolio(unittest.TestCase):
         )
         self.assertTrue(rpu)
         self.assertEqual(ps.units, Decimal("7000"))
-        self.assertEqual(self.port.balance, Decimal("99988.84"))
+        self.assertEqual(self.port.balance, Decimal("99988.83"))
 
     def test_close_position_long(self):
         position_type = "long"
@@ -265,7 +265,7 @@ class TestPortfolio(unittest.TestCase):
         cp = self.port.close_position(currency_pair)
         self.assertTrue(cp)
         self.assertRaises(ps)  # Key doesn't exist
-        self.assertEqual(self.port.balance, Decimal("100026.64"))
+        self.assertEqual(self.port.balance, Decimal("100026.63"))
 
     def test_close_position_short(self):
         position_type = "short"
@@ -312,13 +312,13 @@ class TestPortfolio(unittest.TestCase):
         )
         self.assertTrue(rpu)
         self.assertEqual(ps.units, Decimal("7000"))
-        self.assertEqual(self.port.balance, Decimal("99988.84"))
+        self.assertEqual(self.port.balance, Decimal("99988.83"))
 
         # Close the position
         cp = self.port.close_position(currency_pair)
         self.assertTrue(cp)
         self.assertRaises(ps)  # Key doesn't exist
-        self.assertEqual(self.port.balance, Decimal("99962.80"))
+        self.assertEqual(self.port.balance, Decimal("99962.77"))
 
 
 if __name__ == "__main__":

@@ -5,6 +5,7 @@ try:
     import httplib
 except ImportError:
     import http.client as httplib
+import logging
 try:
     from urllib import urlencode
 except ImportError:
@@ -47,6 +48,7 @@ class OANDAExecutionHandler(ExecutionHandler):
         self.access_token = access_token
         self.account_id = account_id
         self.conn = self.obtain_connection()
+        self.logger = logging.getLogger(__name__)
 
     def obtain_connection(self):
         return httplib.HTTPSConnection(self.domain)
@@ -68,6 +70,6 @@ class OANDAExecutionHandler(ExecutionHandler):
             "/v1/accounts/%s/orders" % str(self.account_id), 
             params, headers
         )
-        response = self.conn.getresponse().read()
-        print(response)
+        response = self.conn.getresponse().read().decode("utf-8").replace("\n","").replace("\t","")
+        self.logger.debug(response)
         

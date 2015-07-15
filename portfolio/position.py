@@ -24,7 +24,7 @@ class Position(object):
         ticker_cur = self.ticker.prices[self.currency_pair]
         if self.position_type == "long":
             self.avg_price = Decimal(str(ticker_cur["ask"]))
-            self.cur_price = Decimal(str(ticker_cur["bid"]))
+            self.cur_price = Decimal(str(ticker_cur["bid"]))    
         else:
             self.avg_price = Decimal(str(ticker_cur["bid"]))
             self.cur_price = Decimal(str(ticker_cur["ask"]))
@@ -83,11 +83,11 @@ class Position(object):
         ticker_cp = self.ticker.prices[self.currency_pair]
         ticker_qh = self.ticker.prices[self.quote_home_currency_pair]
         if self.position_type == "long":
-            remove_price = ticker_cp["ask"]
-            qh_close = ticker_qh["bid"]
-        else:
             remove_price = ticker_cp["bid"]
             qh_close = ticker_qh["ask"]
+        else:
+            remove_price = ticker_cp["ask"]
+            qh_close = ticker_qh["bid"]
         self.units -= dec_units
         self.update_position_price()
         # Calculate PnL
@@ -99,11 +99,9 @@ class Position(object):
         ticker_cp = self.ticker.prices[self.currency_pair]
         ticker_qh = self.ticker.prices[self.quote_home_currency_pair]
         if self.position_type == "long":
-            remove_price = ticker_cp["ask"]
-            qh_close = ticker_qh["bid"]
-        else:
-            remove_price = ticker_cp["bid"]
             qh_close = ticker_qh["ask"]
+        else:
+            qh_close = ticker_qh["bid"]
         self.update_position_price()
         # Calculate PnL
         pnl = self.calculate_pips() * qh_close * self.units
