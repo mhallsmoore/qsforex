@@ -22,8 +22,11 @@ pip-log.txt
 .coverage
 .tox
 
-#Translations
+# Translations
 *.mo
 
 #Mr Developer
 .mr.developer.cfg
+
+# Settings
+settings.py
