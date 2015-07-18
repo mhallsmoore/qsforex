@@ -2,7 +2,7 @@
 
 QSForex is an open-source event-driven backtesting and live trading platform for use in the foreign exchange ("forex") markets, currently in an "alpha" state.
 
-It has been created as part of the Forex Trading Diary series on QuantStart.com to provide the systematic trading community with a robust trading engine that allows straightforward forex strategy implementation and testing. 
+It has been created as part of the Forex Trading Diary series on QuantStart.com to provide the systematic trading community with a robust trading engine that allows straightforward forex strategy implementation and testing.
 
 The software is provided under a permissive "MIT" license (see below).
 
@@ -24,13 +24,20 @@ The software is provided under a permissive "MIT" license (see below).
 
 2) Clone this git repository into a suitable location on your machine using the following command in your terminal: ```git clone https://github.com/mhallsmoore/qsforex.git```. Alternative you can download the zip file of the current master branch at https://github.com/mhallsmoore/qsforex/archive/master.zip.
 
-3) Create a set of environment variables for all of the settings found in the ```settings.py``` file in the application root directory. Alternatively, you can "hard code" your specific settings by overwriting the ```os.environ.get(...)``` calls for each setting:
+3) Copy settings.py.example to settings.py. This file contains the settings and environment variables needed to run the framework correctly.
+
+```
+cp settings.py.example settings.py
+
+```
+
+4) Create a set of environment variables for all of the settings found in the ```settings.py``` file in the application root directory. Alternatively, you can "hard code" your specific settings by overwriting the ```os.environ.get(...)``` calls for each setting:
 
 ```
 # The data directory used to store your backtesting CSV files
 CSV_DATA_DIR = "/path/to/your/csv/data/dir"
 
-# The directory where the backtest.csv and equity.csv files 
+# The directory where the backtest.csv and equity.csv files
 # will be stored after a backtest is carried out
 OUTPUT_RESULTS_DIR = "/path/to/your/output/results/dir"
 
@@ -101,7 +108,7 @@ python scripts/generate_simulated_pair.py GBPUSD
 
 At this stage the script is hardcoded to create a single month's data for January 2014. That is, you will see individual files, of the format ```BBBQQQ_YYYYMMDD.csv``` (e.g. ```GBPUSD_20140112.csv```) appear in your ```CSV_DATA_DIR``` for all business days in that month. If you wish to change the month/year of the data output, simply modify the file and re-run.
 
-7) Now that the historical data has been generated it is possible to carry out a backtest. The backtest file itself is stored in ```backtest/backtest.py```, but this only contains the ```Backtest``` class. To actually execute a backtest you need to instantiate this class and provide it with the necessary modules. 
+7) Now that the historical data has been generated it is possible to carry out a backtest. The backtest file itself is stored in ```backtest/backtest.py```, but this only contains the ```Backtest``` class. To actually execute a backtest you need to instantiate this class and provide it with the necessary modules.
 
 The best way to see how this is done is to look at the example Moving Average Crossover implementation in the ```examples/mac.py``` file and use this as a template. This makes use of the ```MovingAverageCrossStrategy``` which is found in ```strategy/strategy.py```. This defaults to trading both GBP/USD and EUR/USD to demonstrate multiple currency pair usage. It uses data found in ```CSV_DATA_DIR```.
 
