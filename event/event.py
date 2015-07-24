@@ -3,6 +3,7 @@ class Event(object):
 
 
 class TickEvent(Event):
+
     def __init__(self, instrument, time, bid, ask):
         self.type = 'TICK'
         self.instrument = instrument
@@ -12,7 +13,7 @@ class TickEvent(Event):
 
     def __str__(self):
         return "Type: %s, Instrument: %s, Time: %s, Bid: %s, Ask: %s" % (
-            str(self.type), str(self.instrument), 
+            str(self.type), str(self.instrument),
             str(self.time), str(self.bid), str(self.ask)
         )
 
@@ -21,6 +22,7 @@ class TickEvent(Event):
 
 
 class SignalEvent(Event):
+
     def __init__(self, instrument, order_type, side, time):
         self.type = 'SIGNAL'
         self.instrument = instrument
@@ -30,7 +32,7 @@ class SignalEvent(Event):
 
     def __str__(self):
         return "Type: %s, Instrument: %s, Order Type: %s, Side: %s" % (
-            str(self.type), str(self.instrument), 
+            str(self.type), str(self.instrument),
             str(self.order_type), str(self.side)
         )
 
@@ -39,6 +41,7 @@ class SignalEvent(Event):
 
 
 class OrderEvent(Event):
+
     def __init__(self, instrument, units, order_type, side):
         self.type = 'ORDER'
         self.instrument = instrument

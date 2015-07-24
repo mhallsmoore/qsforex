@@ -2,7 +2,7 @@ from decimal import Decimal
 import os
 
 
-ENVIRONMENTS = { 
+ENVIRONMENTS = {
     "streaming": {
         "real": "stream-fxtrade.oanda.com",
         "practice": "stream-fxpractice.oanda.com",

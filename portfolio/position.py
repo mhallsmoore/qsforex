@@ -2,8 +2,9 @@ from decimal import Decimal, getcontext, ROUND_HALF_DOWN
 
 
 class Position(object):
+
     def __init__(
-        self, home_currency, position_type, 
+        self, home_currency, position_type,
         currency_pair, units, ticker
     ):
         self.home_currency = home_currency  # Account denomination (e.g. GBP)
@@ -16,15 +17,18 @@ class Position(object):
         self.profit_perc = self.calculate_profit_perc()
 
     def set_up_currencies(self):
-        self.base_currency = self.currency_pair[:3]    # For EUR/USD, this is EUR
-        self.quote_currency = self.currency_pair[3:]   # For EUR/USD, this is USD
+        # For EUR/USD, this is EUR
+        self.base_currency = self.currency_pair[:3]
+        # For EUR/USD, this is USD
+        self.quote_currency = self.currency_pair[3:]
         # For EUR/USD, with account denominated in GBP, this is USD/GBP
-        self.quote_home_currency_pair = "%s%s" % (self.quote_currency, self.home_currency)
+        self.quote_home_currency_pair = "%s%s" % (
+            self.quote_currency, self.home_currency)
 
         ticker_cur = self.ticker.prices[self.currency_pair]
         if self.position_type == "long":
             self.avg_price = Decimal(str(ticker_cur["ask"]))
-            self.cur_price = Decimal(str(ticker_cur["bid"]))    
+            self.cur_price = Decimal(str(ticker_cur["bid"]))
         else:
             self.avg_price = Decimal(str(ticker_cur["bid"]))
             self.cur_price = Decimal(str(ticker_cur["ask"]))
@@ -50,7 +54,7 @@ class Position(object):
         profit = pips * qh_close * self.units
         return profit.quantize(
             Decimal("0.00001"), ROUND_HALF_DOWN
-        )   
+        )
 
     def calculate_profit_perc(self):
         return (self.profit_base / self.units * Decimal("100.00")).quantize(
@@ -73,8 +77,8 @@ class Position(object):
         else:
             add_price = cp["bid"]
         new_total_units = self.units + units
-        new_total_cost = self.avg_price*self.units + add_price*units
-        self.avg_price = new_total_cost/new_total_units
+        new_total_cost = self.avg_price * self.units + add_price * units
+        self.avg_price = new_total_cost / new_total_units
         self.units = new_total_units
         self.update_position_price()
 
