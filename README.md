@@ -65,6 +65,14 @@ source ~/venv/qsforex/bin/activate
 pip install -r ~/projects/qsforex/requirements.txt
 ```
 
+On Windows, Anaconda can be used to create a conda environment. Use the following commands to create a conda environment in windows and install the required packages. The first line will install the packages and the requirments file using conda's built in package manager. Urllib3 is easiest installed using pip after activating the environment.
+
+```
+conda create --name qsforex --file c:\projects\qsforex\requirements-anaconda-windows.txt
+activate qsforex
+pip install urllib3
+```
+
 This will take some time as NumPy, SciPy, Pandas, Scikit-Learn and Matplotlib must be compiled. There are many packages required for this to work, so please take a look at these two articles for more information:
 
 * https://www.quantstart.com/articles/Quick-Start-Python-Quantitative-Research-Environment-on-Ubuntu-14-04
@@ -74,6 +82,11 @@ You will also need to create a symbolic link from your ```site-packages``` direc
 
 ```
 ln -s ~/projects/qsforex/ ~/venv/qsforex/lib/python2.7/site-packages/qsforex
+```
+
+For a Windows Anaconda installation run this command:
+```
+mklink /d c:\Anaconda\envs\qsforex\Lib\site-packages\qsforex c:\projects\qsforex
 ```
 
 Make sure to change ```~/projects/qsforex``` to your installation directory and ```~/venv/qsforex/lib/python2.7/site-packages/``` to your virtualenv site packages directory.
