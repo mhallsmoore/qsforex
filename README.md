@@ -111,7 +111,7 @@ You will now be able to run the subsequent commands correctly.
 
 ## Practice/Live Trading
 
-5) At this stage, if you simply wish to carry out practice or live trading then you can run ```python trading/trading.py```, which will use the default ```TestStrategy``` trading strategy. This simply buys or sells a currency pair every 5th tick. It is purely for testing - do not use it in a live trading environment!
+5) At this stage, if you simply wish to carry out practice or live trading then you can run ```cd trading && python trading.py```, which will use the default ```TestStrategy``` trading strategy. This simply buys or sells a currency pair every 5th tick. It is purely for testing - do not use it in a live trading environment!
 
 If you wish to create a more useful strategy, then simply create a new class with a descriptive name, e.g. ```MeanReversionMultiPairStrategy``` and ensure it has a ```calculate_signals``` method. You will need to pass this class the ```pairs``` list as well as the ```events``` queue, as in ```trading/trading.py```.
 
