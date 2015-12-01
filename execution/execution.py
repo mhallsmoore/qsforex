@@ -11,7 +11,6 @@ try:
 except ImportError:
     from urllib.parse import urlencode
 import urllib3
-urllib3.disable_warnings()
 
 
 class ExecutionHandler(object):
@@ -66,8 +65,8 @@ class OANDAExecutionHandler(ExecutionHandler):
             "side" : event.side
         })
         self.conn.request(
-            "POST", 
-            "/v1/accounts/%s/orders" % str(self.account_id), 
+            "POST",
+            "/v1/accounts/%s/orders" % str(self.account_id),
             params, headers
         )
         response = self.conn.getresponse().read().decode("utf-8").replace("\n","").replace("\t","")
