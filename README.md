@@ -2,7 +2,7 @@
 
 QSForex is an open-source event-driven backtesting and live trading platform for use in the foreign exchange ("forex") markets, currently in an "alpha" state.
 
-It has been created as part of the Forex Trading Diary series on QuantStart.com to provide the systematic trading community with a robust trading engine that allows straightforward forex strategy implementation and testing. 
+It has been created as part of the Forex Trading Diary series on QuantStart.com to provide the systematic trading community with a robust trading engine that allows straightforward forex strategy implementation and testing.
 
 The software is provided under a permissive "MIT" license (see below).
 
@@ -24,33 +24,10 @@ The software is provided under a permissive "MIT" license (see below).
 
 2) Clone this git repository into a suitable location on your machine using the following command in your terminal: ```git clone https://github.com/mhallsmoore/qsforex.git```. Alternative you can download the zip file of the current master branch at https://github.com/mhallsmoore/qsforex/archive/master.zip.
 
-3) Create a set of environment variables for all of the settings found in the ```settings.py``` file in the application root directory. Alternatively, you can "hard code" your specific settings by overwriting the ```os.environ.get(...)``` calls for each setting:
+3) Install the dependencies. This is easily accomplished using pip and virtual environments. However, you can alternatively install them via apt if you are running ubuntu 15.10 or later. Trusty (Ubuntu 14.04) is missing the python-seaborn package, but otherwise has all required dependencies. This avoids the need to compile the required packages.
 
-```
-# The data directory used to store your backtesting CSV files
-CSV_DATA_DIR = "/path/to/your/csv/data/dir"
-
-# The directory where the backtest.csv and equity.csv files 
-# will be stored after a backtest is carried out
-OUTPUT_RESULTS_DIR = "/path/to/your/output/results/dir"
-
-# Change DOMAIN to "real" if you wish to carry out live trading
-DOMAIN = "practice"
-
-# Your OANDA API Access Token (found in your Account Details on their website)
-ACCESS_TOKEN = "1234123412341234"
-
-# Your OANDA Account ID (found in your Account Details on their website)
-ACCOUNT_ID = "1234123412341234"
-
-# Your base currency (e.g. "GBP", "USD", "EUR" etc.)
-BASE_CURRENCY = "GBP"
-
-# Your account equity in the base currency (for backtesting)
-EQUITY = Decimal("100000.00")
-```
-
-4) Create a virtual environment ("virtualenv") for the QSForex code and utilise pip to install the requirements. For instance in a Unix-based system (Mac or Linux) you might create such a directory as follows by entering the following commands in the terminal:
+### Using Virtual Environment and Pip
+Create a virtual environment ("virtualenv") for the QSForex code and utilise pip to install the requirements. For instance in a Unix-based system (Mac or Linux) you might create such a directory as follows by entering the following commands in the terminal:
 
 ```
 mkdir -p ~/venv/qsforex
@@ -73,10 +50,62 @@ This will take some time as NumPy, SciPy, Pandas, Scikit-Learn and Matplotlib mu
 You will also need to create a symbolic link from your ```site-packages``` directory to your QSForex installation directory in order to be able to call ```import qsforex``` within the code. To do this you will need a command similar to the following:
 
 ```
-ln -s ~/projects/qsforex/ ~/venv/qsforex/lib/python2.7/site-packages/qsforex
+ln -s qsforex/ ~/venv/qsforex/lib/python2.7/site-packages/qsforex
 ```
 
-Make sure to change ```~/projects/qsforex``` to your installation directory and ```~/venv/qsforex/lib/python2.7/site-packages/``` to your virtualenv site packages directory.
+Make sure to change ```qsforex``` to your installation directory and ```~/venv/qsforex/lib/python2.7/site-packages/``` to your virtualenv site packages directory.
+
+### Using Apt / Debian packages
+Install the following package dependencies:
+
+```
+sudo apt-get install make libdatetime-perl libwww-mechanize-perl liblog-log4perl-perl libtext-csv-xs-perl libconfig-simple-perl libnet-xmpp-perl libclone-perl libdatetime-format-strptime-perl libipc-system-simple-perl libjson-any-perl libnet-smtp-ssl-perl libfile-slurp-perl libsys-cpu-perl libparallel-forkmanager-perl --no-install-recommends
+```
+
+If running trusty, or non-testing debian, grab and install python-seaborn from sid at https://packages.debian.org/sid/all/python-seaborn/download. Otherwise, install as usual;
+
+
+```
+sudo apt-get install python-seaborn --no-install-recommends
+```
+
+You will also need to create a symbolic link from your ```site-packages``` directory to your QSForex installation directory in order to be able to call ```import qsforex``` within the code. To do this you will need a command similar to the following:
+
+```
+sudo ln -s qsforex  /usr/lib/python2.7/dist-packages/qsforex
+```
+
+Make sure to change ```qsforex``` to your installation directory and ```/usr/lib/python2.7/dist-packages/qsforex``` to your site packages directory if you your distribution puts packages in a different location.
+
+4) Create a set of environment variables for all of the settings found in the ```settings.py``` file in the application root directory. Alternatively, you can "hard code" your specific settings by overwriting the ```os.environ.get(...)``` calls for each setting:
+
+```
+# The data directory used to store your backtesting CSV files
+CSV_DATA_DIR = os.environ.get('QSFOREX_CSV_DATA_DIR', 'data')
+
+# The directory where the backtest.csv and equity.csv files
+# will be stored after a backtest is carried out
+OUTPUT_RESULTS_DIR = os.environ.get('QSFOREX_OUTPUT_RESULTS_DIR', 'results')
+
+# Change DOMAIN to "real" if you wish to carry out live trading
+DOMAIN = os.environ.get('QSFOREX_DOMAIN',"practice")
+STREAM_DOMAIN = ENVIRONMENTS["streaming"][DOMAIN]
+API_DOMAIN = ENVIRONMENTS["api"][DOMAIN]
+
+# Your OANDA API Access Token (found in your Account Details on their website)
+ACCESS_TOKEN = os.environ.get('OANDA_API_ACCESS_TOKEN', 'None')
+
+# Your OANDA Account ID (found in your Account Details on their website)
+ACCOUNT_ID = os.environ.get('OANDA_API_ACCOUNT_ID', 'None')
+
+# Your base currency (e.g. "GBP", "USD", "EUR" etc.)
+BASE_CURRENCY = os.environ.get('QSFOREX_BASE_CURRENCY', "GBP")
+
+# Your account equity in the base currency (for backtesting)
+EQUITY = os.environ.get(Decimal('QSFOREX_EQUITY'), Decimal("100000.00"))
+```
+
+With your credentials from Oanda, dependencies installed and the settings configured, you are ready to run.
 
 You will now be able to run the subsequent commands correctly.
 
@@ -95,13 +124,13 @@ Please look at ```strategy/strategy.py``` for details.
 To generate some historical data, make sure that the ```CSV_DATA_DIR``` setting in ```settings.py``` is to set to a directory where you want the historical data to live. You then need to run ```generate_simulated_pair.py```, which is under the ```scripts/``` directory. It expects a single command line argument, which in this case is the currency pair in ```BBBQQQ``` format. For example:
 
 ```
-cd ~/projects/qsforex
+cd qsforex
 python scripts/generate_simulated_pair.py GBPUSD
 ```
 
 At this stage the script is hardcoded to create a single month's data for January 2014. That is, you will see individual files, of the format ```BBBQQQ_YYYYMMDD.csv``` (e.g. ```GBPUSD_20140112.csv```) appear in your ```CSV_DATA_DIR``` for all business days in that month. If you wish to change the month/year of the data output, simply modify the file and re-run.
 
-7) Now that the historical data has been generated it is possible to carry out a backtest. The backtest file itself is stored in ```backtest/backtest.py```, but this only contains the ```Backtest``` class. To actually execute a backtest you need to instantiate this class and provide it with the necessary modules. 
+7) Now that the historical data has been generated it is possible to carry out a backtest. The backtest file itself is stored in ```backtest/backtest.py```, but this only contains the ```Backtest``` class. To actually execute a backtest you need to instantiate this class and provide it with the necessary modules.
 
 The best way to see how this is done is to look at the example Moving Average Crossover implementation in the ```examples/mac.py``` file and use this as a template. This makes use of the ```MovingAverageCrossStrategy``` which is found in ```strategy/strategy.py```. This defaults to trading both GBP/USD and EUR/USD to demonstrate multiple currency pair usage. It uses data found in ```CSV_DATA_DIR```.
 

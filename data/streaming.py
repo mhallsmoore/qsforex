@@ -12,7 +12,7 @@ from qsforex.data.price import PriceHandler
 
 class StreamingForexPrices(PriceHandler):
     def __init__(
-        self, domain, access_token, 
+        self, domain, access_token,
         account_id, pairs, events_queue
     ):
         self.domain = domain
@@ -43,7 +43,6 @@ class StreamingForexPrices(PriceHandler):
         pairs_oanda = ["%s_%s" % (p[:3], p[3:]) for p in self.pairs]
         pair_list = ",".join(pairs_oanda)
         try:
-            requests.packages.urllib3.disable_warnings()
             s = requests.Session()
             url = "https://" + self.domain + "/v1/prices"
             headers = {'Authorization' : 'Bearer ' + self.access_token}
@@ -53,8 +52,8 @@ class StreamingForexPrices(PriceHandler):
             resp = s.send(pre, stream=True, verify=False)
             return resp
         except Exception as e:
-            s.close()
-            print("Caught exception when connecting to stream\n" + str(e))
+            self.logger.error("Caught exception when connecting to stream: %s" % str(e))
+            return
 
     def stream_to_queue(self):
         response = self.connect_to_stream()
@@ -72,7 +71,7 @@ class StreamingForexPrices(PriceHandler):
                     return
                 if "instrument" in msg or "tick" in msg:
                     self.logger.debug(msg)
-                    getcontext().rounding = ROUND_HALF_DOWN 
+                    getcontext().rounding = ROUND_HALF_DOWN
                     instrument = msg["tick"]["instrument"].replace("_", "")
                     time = msg["tick"]["time"]
                     bid = Decimal(str(msg["tick"]["bid"])).quantize(
