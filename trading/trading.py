@@ -2,6 +2,8 @@ import copy
 from decimal import Decimal, getcontext
 import logging
 import logging.config
+from inspect import getsourcefile
+from os.path import abspath, dirname, join, normpath
 try:
     import Queue as queue
 except ImportError:
@@ -46,7 +48,10 @@ def trade(events, strategy, portfolio, execution, heartbeat):
 
 if __name__ == "__main__":
     # Set up logging
-    logging.config.fileConfig('../logging.conf')
+    # Logging config is in ../logging.conf relative to this source file 
+    this_src_path = dirname(abspath(getsourcefile(lambda:0)))
+    log_conf_file = join('..', 'logging.conf')
+    logging.config.fileConfig(normpath(join(this_src_path, log_conf_file)))
     logger = logging.getLogger('qsforex.trading.trading')
 
     # Set the number of decimal places to 2
