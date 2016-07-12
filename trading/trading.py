@@ -31,16 +31,16 @@ def trade(events, strategy, portfolio, execution, heartbeat):
             pass
         else:
             if event is not None:
-                if event.type == 'TICK':
-                    logger.info("Received new tick event: %s", event)
-                    strategy.calculate_signals(event)
-                    portfolio.update_portfolio(event)
-                elif event.type == 'SIGNAL':
-                    logger.info("Received new signal event: %s", event)
-                    portfolio.execute_signal(event)
-                elif event.type == 'ORDER':
-                    logger.info("Received new order event: %s", event)
-                    execution.execute_order(event)
+                if event[1].type == 'TICK':
+                    logger.info("Received new tick event: %s", event[1])
+                    strategy.calculate_signals(event[1])
+                    portfolio.update_portfolio(event[1])
+                elif event[1].type == 'SIGNAL':
+                    logger.info("Received new signal event: %s", event[1])
+                    portfolio.execute_signal(event[1])
+                elif event[1].type == 'ORDER':
+                    logger.info("Received new order event: %s", event[1])
+                    execution.execute_order(event[1])
         time.sleep(heartbeat)
 
 
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     getcontext().prec = 2
 
     heartbeat = 0.0  # Time in seconds between polling
-    events = queue.Queue()
+    events = queue.PriorityQueue()
     equity = settings.EQUITY
 
     # Pairs to include in streaming data set
