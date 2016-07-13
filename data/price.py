@@ -199,4 +199,4 @@ class HistoricCSVPriceHandler(PriceHandler):
 
         # Create the tick event for the queue
         tev = TickEvent(pair, index, bid, ask)
-        self.events_queue.put(tev)
+        self.events_queue.put((30, tev))
