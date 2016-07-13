@@ -185,9 +185,8 @@ class Portfolio(object):
                     add_position_units(currency_pair, units)
 
             order = OrderEvent(currency_pair, units, "market", side)
-            self.events.put(order)
+            self.events.put((10, order))
 
             self.logger.info("Portfolio Balance: %s" % self.balance)
         else:
             self.logger.info("Unable to execute order as price data was insufficient.")
-        

@@ -89,4 +89,4 @@ class StreamingForexPrices(PriceHandler):
                     self.prices[inv_pair]["ask"] = inv_ask
                     self.prices[inv_pair]["time"] = time
                     tev = TickEvent(instrument, time, bid, ask)
-                    self.events_queue.put(tev)
+                    self.events_queue.put((50, tev))
