@@ -23,8 +23,9 @@ class Backtest(object):
         """
         Initialises the backtest.
         """
+        import ipdb; ipdb.set_trace()
         self.pairs = pairs
-        self.events = queue.Queue()
+        self.events = queue.PriorityQueue()
         self.csv_dir = settings.CSV_DATA_DIR
         self.ticker = data_handler(self.pairs, self.events, self.csv_dir)
         self.strategy_params = strategy_params
@@ -57,13 +58,13 @@ class Backtest(object):
                 self.ticker.stream_next_tick()
             else:
                 if event is not None:
-                    if event.type == 'TICK':
-                        self.strategy.calculate_signals(event)
-                        self.portfolio.update_portfolio(event)
-                    elif event.type == 'SIGNAL':
-                        self.portfolio.execute_signal(event)
-                    elif event.type == 'ORDER':
-                        self.execution.execute_order(event)
+                    if event[1].type == 'TICK':
+                        self.strategy.calculate_signals(event[1])
+                        self.portfolio.update_portfolio(event[1])
+                    elif event[1].type == 'SIGNAL':
+                        self.portfolio.execute_signal(event[1])
+                    elif event[1].type == 'ORDER':
+                        self.execution.execute_order(event[1])
             time.sleep(self.heartbeat)
             iters += 1
 
