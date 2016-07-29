@@ -15,14 +15,16 @@ ENVIRONMENTS = {
     }
 }
 
-CSV_DATA_DIR = os.environ.get('QSFOREX_CSV_DATA_DIR', None)
-OUTPUT_RESULTS_DIR = os.environ.get('QSFOREX_OUTPUT_RESULTS_DIR', None)
+# for environment variables use "os.environ.get('QSFOREX_OUTPUT_RESULTS_DIR', None)"
+# currently hardcoded 
+CSV_DATA_DIR = "/media/deckard/External/FOREX/Dukascopy/csv_files"
+OUTPUT_RESULTS_DIR = "/media/deckard/External/FOREX/qsforex_output"
 
 DOMAIN = "practice"
 STREAM_DOMAIN = ENVIRONMENTS["streaming"][DOMAIN]
 API_DOMAIN = ENVIRONMENTS["api"][DOMAIN]
-ACCESS_TOKEN = os.environ.get('OANDA_API_ACCESS_TOKEN', None)
-ACCOUNT_ID = os.environ.get('OANDA_API_ACCOUNT_ID', None)
+ACCESS_TOKEN = "c1888d2cec63c18f0fc943c9dc46ce37-37172e454f1162e8cab2499e917b64c0"
+ACCOUNT_ID = "1910407"
 
 BASE_CURRENCY = "GBP"
 EQUITY = Decimal("100000.00")
