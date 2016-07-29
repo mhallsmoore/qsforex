@@ -1,3 +1,6 @@
 # specific files
 .gitignore
 settings.py
+
+# log_files
+log_files/*

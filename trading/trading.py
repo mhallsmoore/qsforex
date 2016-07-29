@@ -46,18 +46,18 @@ def trade(events, strategy, portfolio, execution, heartbeat):
 
 if __name__ == "__main__":
     # Set up logging
-    logging.config.fileConfig('/home/deckard/Documents/git_repos/qsforex/logging.conf')
     logger = logging.getLogger('qsforex.trading.trading')
     
     #import logging
-    #logger = logging.getLogger('myapp')
+    # send logging output to file - this needs editing to ensure all op (DEBUG inc.)
+    # goes to file 
+    # should this be a seperate class? 
     hdlr = logging.FileHandler('/home/deckard/Documents/git_repos/qsforex/log_files/todays.log')
     formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
     hdlr.setFormatter(formatter)
     logger.addHandler(hdlr) 
     logger.setLevel(logging.DEBUG)
 
-    #logging.basicConfig(filename='/home/deckard/Documents/git_repos/qsforex/log_files/todays.log',level=logging.DEBUG)
 
     # Set the number of decimal places to 2
     getcontext().prec = 2
