@@ -35,7 +35,7 @@ def trade(events, strategy, portfolio, execution, heartbeat):
                     logger.info("Received new tick event: %s", event)
                     strategy.calculate_signals(event)
                     portfolio.update_portfolio(event)
-                elif event.type == 'SIGNAL':
+                elif event.type == 'SIGNAL':    
                     logger.info("Received new signal event: %s", event)
                     portfolio.execute_signal(event)
                 elif event.type == 'ORDER':
@@ -48,6 +48,16 @@ if __name__ == "__main__":
     # Set up logging
     logging.config.fileConfig('/home/deckard/Documents/git_repos/qsforex/logging.conf')
     logger = logging.getLogger('qsforex.trading.trading')
+    
+    #import logging
+    #logger = logging.getLogger('myapp')
+    hdlr = logging.FileHandler('/home/deckard/Documents/git_repos/qsforex/log_files/todays.log')
+    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    hdlr.setFormatter(formatter)
+    logger.addHandler(hdlr) 
+    logger.setLevel(logging.DEBUG)
+
+    #logging.basicConfig(filename='/home/deckard/Documents/git_repos/qsforex/log_files/todays.log',level=logging.DEBUG)
 
     # Set the number of decimal places to 2
     getcontext().prec = 2
@@ -87,12 +97,12 @@ if __name__ == "__main__":
     
     # Create two separate threads: One for the trading loop
     # and another for the market price streaming class
-    trade_thread = threading.Thread(
-        target=trade, args=(
-            events, strategy, portfolio, execution, heartbeat
-        )
+    trade_thread = threading.Thread(target=trade, 
+                                    args=(events, strategy, portfolio, 
+                                          execution, heartbeat)
     )
-    price_thread = threading.Thread(target=prices.stream_to_queue, args=[])
+    price_thread = threading.Thread(target=prices.stream_to_queue, 
+                                    args=[])
     
     # Start both threads
     logger.info("Starting trading thread")
