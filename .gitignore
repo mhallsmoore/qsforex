@@ -29,4 +29,4 @@ pip-log.txt
 .mr.developer.cfg
 
 # specific files
-settings.py
+*settings.py
