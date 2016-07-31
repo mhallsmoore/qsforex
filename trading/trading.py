@@ -52,7 +52,7 @@ if __name__ == "__main__":
     # Set up logging
     logger = logging.getLogger('qsforex.trading.trading')
     logger.setLevel(logging.DEBUG)  
-    log_file = "/home/deckard/Documents/git_repos/qsforex/log_files/rotating.log"
+    log_file = "log_files/rotating.log"
     
     hdlr = TimedRotatingFileHandler(log_file, 
                                     when = 'midnight',
@@ -80,7 +80,7 @@ if __name__ == "__main__":
     equity = settings.EQUITY
 
     # Pairs to include in streaming data set
-    pairs = ["EURUSD", "GBPUSD"]
+    pairs = ["EURUSD", "GBPUSD", "EURGBP"]
 
     # Create the OANDA market price streaming class
     # making sure to provide authentication commands
