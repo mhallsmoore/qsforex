@@ -2,6 +2,8 @@ import copy
 from decimal import Decimal, getcontext
 import logging
 import logging.config
+from logging.handlers import TimedRotatingFileHandler
+
 try:
     import Queue as queue
 except ImportError:
@@ -35,19 +37,40 @@ def trade(events, strategy, portfolio, execution, heartbeat):
                     logger.info("Received new tick event: %s", event)
                     strategy.calculate_signals(event)
                     portfolio.update_portfolio(event)
-                elif event.type == 'SIGNAL':
+                elif event.type == 'SIGNAL':    
                     logger.info("Received new signal event: %s", event)
                     portfolio.execute_signal(event)
                 elif event.type == 'ORDER':
                     logger.info("Received new order event: %s", event)
                     execution.execute_order(event)
+                    
+       
         time.sleep(heartbeat)
 
 
 if __name__ == "__main__":
     # Set up logging
-    logging.config.fileConfig('../logging.conf')
     logger = logging.getLogger('qsforex.trading.trading')
+    logger.setLevel(logging.DEBUG)  
+    log_file = "log_files/rotating.log"
+    
+    hdlr = TimedRotatingFileHandler(log_file, 
+                                    when = 'midnight',
+                                    backupCount = 7)
+    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    hdlr.setFormatter(formatter)
+    logger.addHandler(hdlr) 
+    
+    #import logging
+    # send logging output to file - this needs editing to ensure all op (DEBUG inc.)
+    # goes to file 
+    # should this be a seperate class? 
+    # hdlr = logging.FileHandler('/home/deckard/Documents/git_repos/qsforex/log_files/todays.log')
+    # formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    # hdlr.setFormatter(formatter)
+    # logger.addHandler(hdlr) 
+    # logger.setLevel(logging.DEBUG)
+
 
     # Set the number of decimal places to 2
     getcontext().prec = 2
@@ -57,7 +80,7 @@ if __name__ == "__main__":
     equity = settings.EQUITY
 
     # Pairs to include in streaming data set
-    pairs = ["EURUSD", "GBPUSD"]
+    pairs = ["EURUSD", "GBPUSD", "EURGBP"]
 
     # Create the OANDA market price streaming class
     # making sure to provide authentication commands
@@ -87,12 +110,12 @@ if __name__ == "__main__":
     
     # Create two separate threads: One for the trading loop
     # and another for the market price streaming class
-    trade_thread = threading.Thread(
-        target=trade, args=(
-            events, strategy, portfolio, execution, heartbeat
-        )
+    trade_thread = threading.Thread(target=trade, 
+                                    args=(events, strategy, portfolio, 
+                                          execution, heartbeat)
     )
-    price_thread = threading.Thread(target=prices.stream_to_queue, args=[])
+    price_thread = threading.Thread(target=prices.stream_to_queue, 
+                                    args=[])
     
     # Start both threads
     logger.info("Starting trading thread")
