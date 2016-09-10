@@ -72,4 +72,5 @@ class OANDAExecutionHandler(ExecutionHandler):
         )
         response = self.conn.getresponse().read().decode("utf-8").replace("\n","").replace("\t","")
         self.logger.debug(response)
+        self.conn.close()
         
