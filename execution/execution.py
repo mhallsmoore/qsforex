@@ -6,12 +6,11 @@ try:
 except ImportError:
     import http.client as httplib
 import logging
-try:
-    from urllib import urlencode
-except ImportError:
-    from urllib.parse import urlencode
-import urllib3
-urllib3.disable_warnings()
+from oandapyV20.contrib.requests import MarketOrderRequest
+import oandapyV20.endpoints.orders as orders
+import oandapyV20
+import json
+
 
 
 class ExecutionHandler(object):
@@ -55,21 +54,39 @@ class OANDAExecutionHandler(ExecutionHandler):
 
     def execute_order(self, event):
         instrument = "%s_%s" % (event.instrument[:3], event.instrument[3:])
-        headers = {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "Authorization": "Bearer " + self.access_token
-        }
-        params = urlencode({
-            "instrument" : instrument,
-            "units" : event.units,
-            "type" : event.order_type,
-            "side" : event.side
-        })
-        self.conn.request(
-            "POST", 
-            "/v1/accounts/%s/orders" % str(self.account_id), 
-            params, headers
-        )
-        response = self.conn.getresponse().read().decode("utf-8").replace("\n","").replace("\t","")
-        self.logger.debug(response)
+        if event.order_type == 'market':
+            if event.side == 'buy':
+                mktOrder = MarketOrderRequest(
+                    instrument=instrument,
+                    units= event.units,
+                    #type= event.order_type,
+                    #side= event.side
+                    )
+            if event.side == 'sell':
+                mktOrder = MarketOrderRequest(
+                    instrument=instrument,
+                    units= (event.units*-1),
+                    #type= event.order_type,
+                    #side= event.side
+                    )
+        else:
+            Print('Order Type Not Supported ' + self.order_type)
+            return
+
+        accountID = self.account_id
+        access_token = self.access_token
+
+        api = oandapyV20.API(access_token=access_token)
+
+        r = orders.OrderCreate(accountID, data=mktOrder.data)
+        try:
+            #Try and execute order
+            rv = api.request(r)
+        except oandapyV20.exceptions.V20Error as err:
+            print(r.status_code, err)
+        else:
+            print(json.dumps(rv, indent=2))
+
+        #response = self.conn.getresponse().read().decode("utf-8").replace("\n","").replace("\t","")
+        self.logger.debug(json.dumps(rv, indent=2))
         
